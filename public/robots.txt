@@ -1,0 +1,5 @@
+# Robots.txt for divaananda.com
+User-agent: *
+Allow: /
+
+Sitemap: https://divaananda.com/sitemap.xml

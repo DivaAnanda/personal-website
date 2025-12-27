@@ -1,0 +1,121 @@
+---
+import content from '../data/content.json';
+
+const navLinks = ["Home", "About", "Experience", "Projects", "Contact"];
+---
+
+<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-transparent py-6">
+  <div class="max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center">
+    <!-- Logo -->
+    <a href="#home" class="font-display font-bold text-xl tracking-tighter text-white hover:text-blue-400 transition-colors">
+      DIVA<span class="text-blue-500">.ANANDA</span>
+    </a>
+
+    <!-- Desktop Navigation -->
+    <div class="hidden md:flex items-center gap-8">
+      {navLinks.map((item) => (
+        <a 
+          href={`#${item.toLowerCase()}`}
+          class="text-sm font-medium text-slate-300 hover:text-blue-400 transition-colors uppercase tracking-widest"
+        >
+          {item}
+        </a>
+      ))}
+      <a 
+        href="/cv.pdf" 
+        download
+        class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold tracking-wider rounded flex items-center gap-2 transition-all"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        RESUME
+      </a>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button id="mobile-menu-toggle" class="md:hidden text-white p-2" aria-label="Toggle menu">
+      <svg id="menu-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="4" y1="12" x2="20" y2="12"/>
+        <line x1="4" y1="6" x2="20" y2="6"/>
+        <line x1="4" y1="18" x2="20" y2="18"/>
+      </svg>
+      <svg id="close-icon" class="hidden" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile Menu Overlay -->
+<div id="mobile-menu" class="fixed inset-0 z-40 bg-slate-950 pt-24 px-6 transform translate-x-full transition-transform duration-300 md:hidden">
+  <div class="flex flex-col gap-6">
+    {navLinks.map((item) => (
+      <a 
+        href={`#${item.toLowerCase()}`}
+        class="mobile-nav-link text-2xl font-bold text-slate-200 hover:text-blue-500 transition-colors"
+      >
+        {item}
+      </a>
+    ))}
+    <div class="h-[1px] bg-slate-800 my-2"></div>
+    <a 
+      href="/cv.pdf" 
+      download
+      class="w-full py-4 bg-blue-600 text-white font-bold rounded flex justify-center items-center gap-2"
+    >
+      DOWNLOAD CV
+    </a>
+  </div>
+</div>
+
+<script>
+  // Navbar scroll effect
+  const navbar = document.getElementById('navbar');
+  
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) {
+      navbar?.classList.add('bg-slate-950/80', 'backdrop-blur-md', 'py-4', 'border-b', 'border-slate-800');
+      navbar?.classList.remove('bg-transparent', 'py-6');
+    } else {
+      navbar?.classList.remove('bg-slate-950/80', 'backdrop-blur-md', 'py-4', 'border-b', 'border-slate-800');
+      navbar?.classList.add('bg-transparent', 'py-6');
+    }
+  });
+
+  // Mobile menu toggle
+  const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const menuIcon = document.getElementById('menu-icon');
+  const closeIcon = document.getElementById('close-icon');
+  const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+
+  mobileMenuToggle?.addEventListener('click', () => {
+    const isOpen = !mobileMenu?.classList.contains('translate-x-full');
+    
+    if (isOpen) {
+      mobileMenu?.classList.add('translate-x-full');
+      menuIcon?.classList.remove('hidden');
+      closeIcon?.classList.add('hidden');
+      document.body.style.overflow = '';
+    } else {
+      mobileMenu?.classList.remove('translate-x-full');
+      menuIcon?.classList.add('hidden');
+      closeIcon?.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+  });
+
+  // Close mobile menu when clicking a link
+  mobileNavLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      mobileMenu?.classList.add('translate-x-full');
+      menuIcon?.classList.remove('hidden');
+      closeIcon?.classList.add('hidden');
+      document.body.style.overflow = '';
+    });
+  });
+</script>

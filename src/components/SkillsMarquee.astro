@@ -1,0 +1,21 @@
+---
+import content from '../data/content.json';
+
+const skills = content.skills;
+// Double the skills array for seamless marquee
+const doubledSkills = [...skills, ...skills];
+---
+
+<div class="w-full overflow-hidden bg-slate-900/50 py-10 border-y border-slate-800 backdrop-blur-sm">
+  <div class="flex w-[200%]">
+    <div class="flex gap-16 min-w-full animate-marquee">
+      {doubledSkills.map((skill, index) => (
+        <span 
+          class="text-slate-400 text-2xl md:text-4xl font-display font-bold uppercase whitespace-nowrap opacity-50 hover:opacity-100 hover:text-blue-400 transition-colors cursor-default"
+        >
+          {skill}
+        </span>
+      ))}
+    </div>
+  </div>
+</div>

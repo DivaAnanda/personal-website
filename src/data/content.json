@@ -1,0 +1,104 @@
+{
+  "personal": {
+    "name": "I Gede Surya Diva Ananda",
+    "nickname": "Diva",
+    "role": "Technology Enthusiast",
+    "tagline": "Bridging creativity and code — exploring game development, web technologies, and AI to craft meaningful digital experiences.",
+    "about": "As an Informatics student at Universitas Udayana, I am pursuing a Bachelor of Computer Science with a focus on honing my skills in full-stack web development and exploring AI integration. Through my diverse experiences, including serving as Secretary II of HIMAIF Udayana and interning as a Game Developer at PT. inAReality Studio Nusantara, I have actively contributed to enhancing organizational workflows and exploring creative aspects of software development. My goal is to leverage my technical expertise and collaborative approach to drive innovation and impactful solutions in technology.",
+    "location": "Badung, Bali, Indonesia",
+    "email": "gedesuryadiva@gmail.com",
+    "phone": "+6285738454307"
+  },
+  "socials": {
+    "github": "https://github.com/DivaAnanda",
+    "linkedin": "https://www.linkedin.com/in/divaananda",
+    "email": "mailto:gedesuryadiva@gmail.com"
+  },
+  "skills": [
+    "Unity", "Unreal Engine", "React", "JavaScript", "Python",
+    "Flutter", "Figma", "Premiere Pro", "AWS", "Git",
+    "HTML/CSS", "SQLite", "Game Design", "AI Integration", "Web Development"
+  ],
+  "education": {
+    "degree": "Bachelor of Computer Science",
+    "major": "Informatics",
+    "university": "Universitas Udayana",
+    "period": "2023 - 2027",
+    "gpa": "3.94"
+  },
+  "experience": [
+    {
+      "id": 1,
+      "role": "Front-End Web & Back-End with AI Cohort",
+      "company": "Asah led by Dicoding",
+      "date": "Aug 2025 - Present",
+      "description": "Developing comprehensive understanding of web application development, front-end technologies, back-end development on AWS platform, and AI integration into web applications.",
+      "tech": ["AWS", "JavaScript", "AI"]
+    },
+    {
+      "id": 2,
+      "role": "Game Developer Intern",
+      "company": "PT. inAReality Studio Nusantara",
+      "date": "Jul 2025 - Sep 2025",
+      "description": "Learned to create a Game Design Document and successfully prototyped my first game called 'Project Sandikala' within a limited timeframe.",
+      "tech": ["Unity", "Game Design", "Prototyping"]
+    },
+    {
+      "id": 3,
+      "role": "Secretary II",
+      "company": "HIMAIF Udayana",
+      "date": "Dec 2024 - Present",
+      "description": "Ensuring seamless flow of paperwork and communication between the organization and the Faculty of Natural Science and Mathematics. Managing permits and documentation for organizational initiatives.",
+      "tech": ["Leadership", "Communication", "Organization"]
+    },
+    {
+      "id": 4,
+      "role": "Vice Chairman",
+      "company": "INVENTION 2024",
+      "date": "Feb 2024 - Nov 2024",
+      "description": "Directed the full event lifecycle for Invention 2024, a national-scale IT competition for hundreds of students. Managed collaboration between teams from different divisions.",
+      "tech": ["Event Management", "Leadership", "Team Coordination"]
+    }
+  ],
+  "projects": [
+    {
+      "id": 1,
+      "title": "Project Sandikala",
+      "description": "A game prototype developed during my internship at PT. inAReality Studio Nusantara. Created within a limited timeframe, featuring complete game design documentation.",
+      "tech": ["Unity", "Game Design", "C#"],
+      "image": "linear-gradient(to bottom right, #1e293b, #0f172a)",
+      "link": "#",
+      "github": "#"
+    }
+  ],
+  "achievements": [
+    {
+      "title": "1st Place PKM-GFT",
+      "event": "PKM Competition 2024 Udayana University",
+      "date": "Sep 2024"
+    },
+    {
+      "title": "3rd Place PKM-KC",
+      "event": "PKM Competition 2025 Udayana University",
+      "date": "Sep 2025"
+    },
+    {
+      "title": "Finalist Videography",
+      "event": "Udayana Focus Competition and Charity (UFONITY) 2023",
+      "date": "Oct 2023"
+    }
+  ],
+  "certifications": [
+    "Belajar Dasar Git dengan GitHub",
+    "Belajar Dasar Pemrograman JavaScript",
+    "Belajar Membuat Aplikasi Flutter untuk Pemula",
+    "Belajar Back-End Pemula dengan JavaScript",
+    "Belajar Dasar Pemrograman Web"
+  ],
+  "seo": {
+    "title": "I Gede Surya Diva Ananda | Technology Enthusiast",
+    "description": "Portfolio of I Gede Surya Diva Ananda - Computer Science student at Universitas Udayana, passionate about game development, web technologies, and AI.",
+    "url": "https://divaananda.com",
+    "image": "/og-image.png"
+  }
+}

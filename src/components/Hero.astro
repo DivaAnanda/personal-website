@@ -1,0 +1,226 @@
+---
+import content from '../data/content.json';
+---
+
+<section id="home" class="relative min-h-screen grid grid-cols-1 lg:grid-cols-2 gap-12 items-center px-6 md:px-20 overflow-hidden bg-[#0a0a0a]">
+  <!-- Background Grid Pattern -->
+  <div class="absolute inset-0 z-0 bg-grid"></div>
+
+  <!-- Spotlight Effect Layer (mouse-following) -->
+  <div id="spotlight" class="pointer-events-none absolute inset-0 z-10 transition-opacity duration-300"></div>
+
+  <!-- Content - Left Column -->
+  <div class="relative z-20 max-w-5xl order-2 lg:order-1 pt-20 lg:pt-0">
+    <div class="animate-fade-in-up">
+      <span class="text-blue-500 font-mono tracking-widest text-sm md:text-base mb-4 block">
+        // INTRODUCTION
+      </span>
+      <h1 class="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-slate-100 leading-tight tracking-tighter mb-6">
+        {content.personal.name.split(' ').slice(0, 3).join(' ')} <br />
+        <span class="gradient-text">
+          {content.personal.role.toUpperCase()}
+        </span>
+      </h1>
+      <p class="text-slate-400 text-lg md:text-xl max-w-2xl leading-relaxed mb-10">
+        {content.personal.tagline}
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-4">
+        <a 
+          href="#projects"
+          class="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-none font-bold tracking-wider transition-all duration-300 flex items-center justify-center gap-2 group"
+        >
+          VIEW PROJECTS
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:translate-x-1 transition-transform">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </a>
+        <a 
+          href="#contact"
+          class="px-8 py-4 border border-slate-700 hover:border-blue-500 text-slate-300 hover:text-blue-400 bg-transparent rounded-none font-bold tracking-wider transition-all duration-300 text-center"
+        >
+          CONTACT ME
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero Visual - Right Column: 3D System Core -->
+  <div class="relative z-20 order-1 lg:order-2 flex justify-center items-center h-[400px] md:h-[500px] pt-28 lg:pt-0 overflow-visible">
+    
+    <!-- Central Core -->
+    <div class="relative w-32 h-32 md:w-40 md:h-40 flex items-center justify-center z-20 animate-pulse-glow">
+      <!-- Core Glow -->
+      <div class="absolute inset-0 bg-blue-500/20 rounded-full blur-xl animate-pulse"></div>
+      <div class="absolute inset-0 border-2 border-blue-400/30 rounded-full"></div>
+      
+      <!-- Core Geometry - CPU Icon -->
+      <div class="core-geometry w-20 h-20 bg-slate-900 border border-blue-500 rounded-lg flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.5)] z-20 relative">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400">
+          <rect x="4" y="4" width="16" height="16" rx="2"/>
+          <rect x="9" y="9" width="6" height="6"/>
+          <path d="M15 2v2"/>
+          <path d="M15 20v2"/>
+          <path d="M2 15h2"/>
+          <path d="M2 9h2"/>
+          <path d="M20 15h2"/>
+          <path d="M20 9h2"/>
+          <path d="M9 2v2"/>
+          <path d="M9 20v2"/>
+        </svg>
+        <!-- Inner Core Glow -->
+        <div class="absolute inset-0 bg-blue-500/30 rounded-lg blur-md -z-10"></div>
+      </div>
+      
+      <!-- Gyroscopic Rings -->
+      <div class="absolute inset-[-20px] border border-slate-700/60 rounded-full z-10 animate-rotate-slow"></div>
+      <div class="absolute inset-[-40px] border border-slate-700/40 rounded-full z-10 animate-rotate-reverse"></div>
+      <div class="absolute inset-[-60px] border border-slate-800/80 rounded-full border-dashed z-10 animate-rotate-slow" style="animation-duration: 25s;"></div>
+    </div>
+
+    <!-- Orbiting Tech Elements -->
+    <div class="orbital orbital-1" data-radius="140" data-speed="1" data-delay="0">
+      <div class="orbital-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 18 22 12 16 6"/>
+          <polyline points="8 6 2 12 8 18"/>
+        </svg>
+      </div>
+    </div>
+    
+    <div class="orbital orbital-2" data-radius="140" data-speed="1.2" data-delay="2">
+      <div class="orbital-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <ellipse cx="12" cy="5" rx="9" ry="3"/>
+          <path d="M3 5V19A9 3 0 0 0 21 19V5"/>
+          <path d="M3 12A9 3 0 0 0 21 12"/>
+        </svg>
+      </div>
+    </div>
+    
+    <div class="orbital orbital-3" data-radius="140" data-speed="0.8" data-delay="4">
+      <div class="orbital-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="20" height="8" x="2" y="2" rx="2" ry="2"/>
+          <rect width="20" height="8" x="2" y="14" rx="2" ry="2"/>
+          <line x1="6" x2="6.01" y1="6" y2="6"/>
+          <line x1="6" x2="6.01" y1="18" y2="18"/>
+        </svg>
+      </div>
+    </div>
+    
+    <div class="orbital orbital-4" data-radius="180" data-speed="-0.5" data-delay="1">
+      <div class="orbital-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="18" height="18" x="3" y="3" rx="2"/>
+          <path d="M3 9h18"/>
+          <path d="M9 21V9"/>
+        </svg>
+      </div>
+    </div>
+    
+    <div class="orbital orbital-5" data-radius="180" data-speed="-0.7" data-delay="3">
+      <div class="orbital-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Data streams (decorative lines) -->
+    <div class="absolute inset-0 pointer-events-none hidden lg:block">
+      <div class="absolute top-1/2 left-1/2 w-[400px] h-[1px] bg-gradient-to-r from-transparent via-blue-900/50 to-transparent -translate-x-1/2 -translate-y-1/2 rotate-45"></div>
+      <div class="absolute top-1/2 left-1/2 w-[400px] h-[1px] bg-gradient-to-r from-transparent via-blue-900/50 to-transparent -translate-x-1/2 -translate-y-1/2 -rotate-45"></div>
+    </div>
+  </div>
+
+  <!-- Floating Keywords (Decorations) -->
+  <div class="absolute right-10 bottom-20 hidden lg:block text-right opacity-20 pointer-events-none font-mono text-sm">
+    <p>System.Architecture</p>
+    <p>UX.Engineering</p>
+    <p>Performance.Optimization</p>
+  </div>
+</section>
+
+<style>
+  .orbital {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 48px;
+    height: 48px;
+    margin-left: -24px;
+    margin-top: -24px;
+    z-index: 20;
+  }
+  
+  .orbital-icon {
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(71, 85, 105, 0.6);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #93c5fd;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  }
+  
+  .orbital-1 { animation: orbit1 8s linear infinite; }
+  .orbital-2 { animation: orbit2 6.5s linear infinite; }
+  .orbital-3 { animation: orbit3 10s linear infinite; }
+  .orbital-4 { animation: orbit4 16s linear infinite reverse; }
+  .orbital-5 { animation: orbit5 11s linear infinite reverse; }
+  
+  @keyframes orbit1 {
+    from { transform: rotate(0deg) translateX(140px) rotate(0deg); }
+    to { transform: rotate(360deg) translateX(140px) rotate(-360deg); }
+  }
+  
+  @keyframes orbit2 {
+    from { transform: rotate(120deg) translateX(140px) rotate(-120deg); }
+    to { transform: rotate(480deg) translateX(140px) rotate(-480deg); }
+  }
+  
+  @keyframes orbit3 {
+    from { transform: rotate(240deg) translateX(140px) rotate(-240deg); }
+    to { transform: rotate(600deg) translateX(140px) rotate(-600deg); }
+  }
+  
+  @keyframes orbit4 {
+    from { transform: rotate(60deg) translateX(180px) rotate(-60deg); }
+    to { transform: rotate(420deg) translateX(180px) rotate(-420deg); }
+  }
+  
+  @keyframes orbit5 {
+    from { transform: rotate(180deg) translateX(180px) rotate(-180deg); }
+    to { transform: rotate(540deg) translateX(180px) rotate(-540deg); }
+  }
+  
+  .core-geometry {
+    animation: core-rotate 20s linear infinite;
+  }
+  
+  @keyframes core-rotate {
+    from { transform: rotateY(0deg) rotateX(0deg); }
+    to { transform: rotateY(360deg) rotateX(180deg); }
+  }
+</style>
+
+<script>
+  // Spotlight effect following mouse
+  const heroSection = document.getElementById('home');
+  const spotlight = document.getElementById('spotlight');
+
+  heroSection?.addEventListener('mousemove', (e) => {
+    const rect = heroSection.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    if (spotlight) {
+      spotlight.style.background = `radial-gradient(600px circle at ${x}px ${y}px, rgba(59, 130, 246, 0.12), transparent 40%)`;
+    }
+  });
+</script>
