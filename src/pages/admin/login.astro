@@ -4,7 +4,7 @@ import '../../styles/admin.css';
 // Check if already logged in
 import { validateRequest } from '../../lib/auth';
 
-const { isAuthenticated } = validateRequest(Astro.request);
+const { isAuthenticated } = await validateRequest(Astro.request);
 if (isAuthenticated) {
     return Astro.redirect('/admin');
 }

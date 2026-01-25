@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
-import db from './db';
+import { db, ensureSchema } from './db';
 
 // Session duration: 7 days
 const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
@@ -9,15 +9,19 @@ const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
 // Admin User Functions
 // ============================================
 
-export function getAdminByEmail(email: string) {
-    const stmt = db.prepare('SELECT * FROM admin_users WHERE email = ?');
-    return stmt.get(email);
+export async function getAdminByEmail(email: string) {
+    await ensureSchema();
+    const result = await db.execute({ sql: 'SELECT * FROM admin_users WHERE email = ?', args: [email] });
+    return result.rows[0] || null;
 }
 
-export function createAdminUser(email: string, password: string) {
+export async function createAdminUser(email: string, password: string) {
+    await ensureSchema();
     const passwordHash = bcrypt.hashSync(password, 10);
-    const stmt = db.prepare('INSERT INTO admin_users (email, password_hash) VALUES (?, ?)');
-    return stmt.run(email, passwordHash);
+    await db.execute({
+        sql: 'INSERT INTO admin_users (email, password_hash) VALUES (?, ?)',
+        args: [email, passwordHash]
+    });
 }
 
 export function verifyPassword(password: string, hash: string): boolean {
@@ -28,38 +32,43 @@ export function verifyPassword(password: string, hash: string): boolean {
 // Session Functions
 // ============================================
 
-export function createSession(userId: number): string {
+export async function createSession(userId: number): Promise<string> {
+    await ensureSchema();
     const sessionId = uuidv4();
     const expiresAt = new Date(Date.now() + SESSION_DURATION_MS).toISOString();
     
-    const stmt = db.prepare('INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)');
-    stmt.run(sessionId, userId, expiresAt);
+    await db.execute({
+        sql: 'INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)',
+        args: [sessionId, userId, expiresAt]
+    });
     
     return sessionId;
 }
 
-export function getSession(sessionId: string) {
-    const stmt = db.prepare(`
-        SELECT s.*, u.email as user_email 
-        FROM sessions s 
-        JOIN admin_users u ON s.user_id = u.id 
-        WHERE s.id = ?
-    `);
-    return stmt.get(sessionId);
+export async function getSession(sessionId: string) {
+    await ensureSchema();
+    const result = await db.execute({
+        sql: `SELECT s.*, u.email as user_email 
+              FROM sessions s 
+              JOIN admin_users u ON s.user_id = u.id 
+              WHERE s.id = ?`,
+        args: [sessionId]
+    });
+    return result.rows[0] || null;
 }
 
-export function deleteSession(sessionId: string) {
-    const stmt = db.prepare('DELETE FROM sessions WHERE id = ?');
-    return stmt.run(sessionId);
+export async function deleteSession(sessionId: string) {
+    await ensureSchema();
+    await db.execute({ sql: 'DELETE FROM sessions WHERE id = ?', args: [sessionId] });
 }
 
-export function cleanExpiredSessions() {
-    const stmt = db.prepare('DELETE FROM sessions WHERE expires_at < datetime("now")');
-    return stmt.run();
+export async function cleanExpiredSessions() {
+    await ensureSchema();
+    await db.execute({ sql: 'DELETE FROM sessions WHERE expires_at < datetime("now")', args: [] });
 }
 
-export function isSessionValid(sessionId: string): boolean {
-    const session: any = getSession(sessionId);
+export async function isSessionValid(sessionId: string): Promise<boolean> {
+    const session: any = await getSession(sessionId);
     if (!session) return false;
     
     const expiresAt = new Date(session.expires_at);
@@ -82,7 +91,7 @@ export function getSessionFromCookie(cookieHeader: string | null): string | null
     return cookies['admin_session'] || null;
 }
 
-export function validateRequest(request: Request): { isAuthenticated: boolean; userId?: number } {
+export async function validateRequest(request: Request): Promise<{ isAuthenticated: boolean; userId?: number }> {
     const cookieHeader = request.headers.get('cookie');
     const sessionId = getSessionFromCookie(cookieHeader);
     
@@ -90,8 +99,13 @@ export function validateRequest(request: Request): { isAuthenticated: boolean; u
         return { isAuthenticated: false };
     }
     
-    const session: any = getSession(sessionId);
-    if (!session || !isSessionValid(sessionId)) {
+    const session: any = await getSession(sessionId);
+    if (!session) {
+        return { isAuthenticated: false };
+    }
+    
+    const isValid = await isSessionValid(sessionId);
+    if (!isValid) {
         return { isAuthenticated: false };
     }
     
@@ -102,16 +116,13 @@ export function validateRequest(request: Request): { isAuthenticated: boolean; u
 // Initialize Default Admin (if none exists)
 // ============================================
 
-export function ensureAdminExists() {
-    const stmt = db.prepare('SELECT COUNT(*) as count FROM admin_users');
-    const result: any = stmt.get();
+export async function ensureAdminExists() {
+    await ensureSchema();
+    const result = await db.execute({ sql: 'SELECT COUNT(*) as count FROM admin_users', args: [] });
+    const count = (result.rows[0] as any)?.count || 0;
     
-    if (result.count === 0) {
-        // Create default admin - CHANGE THESE CREDENTIALS!
-        createAdminUser('admin@divaananda.com', 'Narxene2004');
+    if (count === 0) {
+        await createAdminUser('admin@divaananda.com', 'Narxene2004');
         console.log('Default admin created: admin@divaananda.com');
     }
 }
-
-// Run on import
-ensureAdminExists();

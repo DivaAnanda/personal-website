@@ -4,7 +4,7 @@ import { validateRequest } from '../../lib/auth';
 import { getAllStats, addStat, deleteStat, updateStat } from '../../lib/db';
 
 // Auth check
-const { isAuthenticated } = validateRequest(Astro.request);
+const { isAuthenticated } = await validateRequest(Astro.request);
 if (!isAuthenticated) {
     return Astro.redirect('/admin/login');
 }
@@ -23,13 +23,13 @@ if (Astro.request.method === 'POST') {
             const value = formData.get('value') as string;
             const sortOrder = parseInt(formData.get('sort_order') as string) || 0;
             if (label && value) {
-                addStat(label.trim(), value.trim(), sortOrder);
+                await addStat(label.trim(), value.trim(), sortOrder);
                 message = 'Stat added successfully!';
                 messageType = 'success';
             }
         } else if (action === 'delete') {
             const id = parseInt(formData.get('id') as string);
-            deleteStat(id);
+            await deleteStat(id);
             message = 'Stat deleted successfully!';
             messageType = 'success';
         } else if (action === 'update') {
@@ -38,7 +38,7 @@ if (Astro.request.method === 'POST') {
             const value = formData.get('value') as string;
             const sortOrder = parseInt(formData.get('sort_order') as string) || 0;
             if (label && value) {
-                updateStat(id, label.trim(), value.trim(), sortOrder);
+                await updateStat(id, label.trim(), value.trim(), sortOrder);
                 message = 'Stat updated successfully!';
                 messageType = 'success';
             }
@@ -50,7 +50,7 @@ if (Astro.request.method === 'POST') {
 }
 
 // Get current data
-const stats = getAllStats();
+const stats = await getAllStats();
 ---
 
 <AdminLayout title="Stats">

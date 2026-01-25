@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getAdminByEmail, verifyPassword, createSession } from '../../../lib/auth';
+import { getAdminByEmail, verifyPassword, createSession, ensureAdminExists } from '../../../lib/auth';
 
 export const POST: APIRoute = async ({ request, redirect, cookies }) => {
     try {
@@ -11,8 +11,11 @@ export const POST: APIRoute = async ({ request, redirect, cookies }) => {
             return redirect('/admin/login?error=invalid');
         }
         
+        // Ensure admin exists (for first time setup)
+        await ensureAdminExists();
+        
         // Find user
-        const user: any = getAdminByEmail(email);
+        const user: any = await getAdminByEmail(email);
         if (!user) {
             return redirect('/admin/login?error=invalid');
         }
@@ -24,7 +27,7 @@ export const POST: APIRoute = async ({ request, redirect, cookies }) => {
         }
         
         // Create session
-        const sessionId = createSession(user.id);
+        const sessionId = await createSession(user.id);
         
         // Set cookie
         cookies.set('admin_session', sessionId, {

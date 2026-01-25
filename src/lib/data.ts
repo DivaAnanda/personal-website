@@ -11,20 +11,23 @@ import {
     addExperience,
     addProject,
     addStat,
-    addFloatingLabel
+    addFloatingLabel,
+    ensureSchema
 } from './db';
+import { ensureAdminExists } from './auth';
 import content from '../data/content.json';
 
 // Check if database is initialized
-function isDatabaseEmpty(): boolean {
-    const info = getPersonalInfo();
-    const skills = getAllSkills();
+async function isDatabaseEmpty(): Promise<boolean> {
+    const info = await getPersonalInfo();
+    const skills = await getAllSkills();
     return !info && skills.length === 0;
 }
 
 // Seed database with JSON content
-export function seedDatabaseFromJson() {
-    if (!isDatabaseEmpty()) {
+export async function seedDatabaseFromJson() {
+    const isEmpty = await isDatabaseEmpty();
+    if (!isEmpty) {
         console.log('Database already seeded, skipping...');
         return;
     }
@@ -33,7 +36,7 @@ export function seedDatabaseFromJson() {
     
     // Seed personal info
     if (content.personal) {
-        updatePersonalInfo({
+        await updatePersonalInfo({
             name: content.personal.name,
             nickname: content.personal.nickname,
             role: content.personal.role,
@@ -52,40 +55,42 @@ export function seedDatabaseFromJson() {
         { label: 'Years Learning', value: '2+', sort_order: 0 },
         { label: 'Projects Delivered', value: '10+', sort_order: 1 }
     ];
-    defaultStats.forEach((stat) => {
-        addStat(stat.label, stat.value, stat.sort_order);
-    });
+    for (const stat of defaultStats) {
+        await addStat(stat.label, stat.value, stat.sort_order);
+    }
     
     // Seed skills
     if (content.skills) {
-        content.skills.forEach((skill: string, index: number) => {
-            addSkill(skill, index);
-        });
+        for (let i = 0; i < content.skills.length; i++) {
+            await addSkill(content.skills[i], i);
+        }
     }
     
     // Seed experience
     if (content.experience) {
-        content.experience.forEach((exp: any, index: number) => {
-            addExperience({
+        for (let i = 0; i < content.experience.length; i++) {
+            const exp = content.experience[i];
+            await addExperience({
                 role: exp.role,
                 company: exp.company,
                 date_range: exp.date,
                 description: exp.description,
                 tech: exp.tech,
-                sort_order: index
+                sort_order: i
             });
-        });
+        }
     }
     
     // Seed projects
     if (content.projects) {
-        content.projects.forEach((proj: any, index: number) => {
+        for (let i = 0; i < content.projects.length; i++) {
+            const proj = content.projects[i] as any;
             const slug = proj.title.toLowerCase()
                 .replace(/[^a-z0-9\s-]/g, '')
                 .replace(/\s+/g, '-')
                 .replace(/-+/g, '-');
             
-            addProject({
+            await addProject({
                 title: proj.title,
                 slug,
                 description: proj.description,
@@ -100,32 +105,38 @@ export function seedDatabaseFromJson() {
                 challenge_solution: null,
                 link: proj.link !== '#' ? proj.link : null,
                 github: proj.github !== '#' ? proj.github : null,
-                featured: index === 0,
-                sort_order: index
+                featured: i === 0,
+                sort_order: i
             });
-        });
+        }
     }
     
-    // Seed floating labels (default tech badges for About section)
+    // Seed floating labels
     const defaultFloatingLabels = ['React', 'Unity', 'TypeScript', 'Game Dev'];
-    defaultFloatingLabels.forEach((label, index) => {
-        addFloatingLabel(label, index);
-    });
+    for (let i = 0; i < defaultFloatingLabels.length; i++) {
+        await addFloatingLabel(defaultFloatingLabels[i], i);
+    }
+    
+    // Ensure admin exists
+    await ensureAdminExists();
     
     console.log('Database seeded successfully!');
 }
 
 // Get all data (from database)
-export function getSiteData() {
-    // Ensure database is seeded
-    seedDatabaseFromJson();
+export async function getSiteData() {
+    // Ensure schema exists
+    await ensureSchema();
     
-    const personal = getPersonalInfo() || content.personal;
-    const skills = getAllSkills();
-    const experience = getAllExperience();
-    const projects = getAllProjects();
-    const stats = getAllStats();
-    const floatingLabels = getAllFloatingLabels();
+    // Seed database if needed
+    await seedDatabaseFromJson();
+    
+    const personal: any = await getPersonalInfo() || content.personal;
+    const skills = await getAllSkills();
+    const experience = await getAllExperience();
+    const projects = await getAllProjects();
+    const stats = await getAllStats();
+    const floatingLabels = await getAllFloatingLabels();
     
     return {
         personal: {

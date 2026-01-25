@@ -4,7 +4,7 @@ import { validateRequest } from '../../lib/auth';
 import { getAllSkills, addSkill, deleteSkill, updateSkill } from '../../lib/db';
 
 // Auth check
-const { isAuthenticated } = validateRequest(Astro.request);
+const { isAuthenticated } = await validateRequest(Astro.request);
 if (!isAuthenticated) {
     return Astro.redirect('/admin/login');
 }
@@ -21,13 +21,13 @@ if (Astro.request.method === 'POST') {
         if (action === 'add') {
             const name = formData.get('name') as string;
             if (name && name.trim()) {
-                addSkill(name.trim());
+                await addSkill(name.trim());
                 message = 'Skill added successfully!';
                 messageType = 'success';
             }
         } else if (action === 'delete') {
             const id = parseInt(formData.get('id') as string);
-            deleteSkill(id);
+            await deleteSkill(id);
             message = 'Skill deleted successfully!';
             messageType = 'success';
         } else if (action === 'update') {
@@ -35,7 +35,7 @@ if (Astro.request.method === 'POST') {
             const name = formData.get('name') as string;
             const sortOrder = parseInt(formData.get('sort_order') as string) || 0;
             if (name && name.trim()) {
-                updateSkill(id, name.trim(), sortOrder);
+                await updateSkill(id, name.trim(), sortOrder);
                 message = 'Skill updated successfully!';
                 messageType = 'success';
             }
@@ -47,7 +47,7 @@ if (Astro.request.method === 'POST') {
 }
 
 // Get current data
-const skills = getAllSkills();
+const skills = await getAllSkills();
 ---
 
 <AdminLayout title="Skills">

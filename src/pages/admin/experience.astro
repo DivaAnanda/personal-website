@@ -4,7 +4,7 @@ import { validateRequest } from '../../lib/auth';
 import { getAllExperience, addExperience, deleteExperience, updateExperience } from '../../lib/db';
 
 // Auth check
-const { isAuthenticated } = validateRequest(Astro.request);
+const { isAuthenticated } = await validateRequest(Astro.request);
 if (!isAuthenticated) {
     return Astro.redirect('/admin/login');
 }
@@ -31,17 +31,17 @@ if (Astro.request.method === 'POST') {
             };
             
             if (action === 'add') {
-                addExperience(data);
+                await addExperience(data);
                 message = 'Experience added successfully!';
             } else {
                 const id = parseInt(formData.get('id') as string);
-                updateExperience(id, data);
+                await updateExperience(id, data);
                 message = 'Experience updated successfully!';
             }
             messageType = 'success';
         } else if (action === 'delete') {
             const id = parseInt(formData.get('id') as string);
-            deleteExperience(id);
+            await deleteExperience(id);
             message = 'Experience deleted successfully!';
             messageType = 'success';
         } else if (action === 'edit') {
@@ -54,7 +54,7 @@ if (Astro.request.method === 'POST') {
 }
 
 // Get current data
-const experiences = getAllExperience();
+const experiences = await getAllExperience();
 if (editingId) {
     editingData = experiences.find((e: any) => e.id === editingId);
 }

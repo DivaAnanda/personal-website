@@ -6,7 +6,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Auth check
-const { isAuthenticated } = validateRequest(Astro.request);
+const { isAuthenticated } = await validateRequest(Astro.request);
 if (!isAuthenticated) {
     return Astro.redirect('/admin/login');
 }
@@ -82,7 +82,7 @@ if (Astro.request.method === 'POST') {
             sort_order: parseInt(formData.get('sort_order') as string) || 0,
         };
         
-        addProject(data);
+        await addProject(data);
         return Astro.redirect('/admin/projects?success=1');
     } catch (error) {
         console.error(error);

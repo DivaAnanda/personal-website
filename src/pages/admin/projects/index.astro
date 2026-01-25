@@ -4,7 +4,7 @@ import { validateRequest } from '../../../lib/auth';
 import { getAllProjects, deleteProject } from '../../../lib/db';
 
 // Auth check
-const { isAuthenticated } = validateRequest(Astro.request);
+const { isAuthenticated } = await validateRequest(Astro.request);
 if (!isAuthenticated) {
     return Astro.redirect('/admin/login');
 }
@@ -31,7 +31,7 @@ if (Astro.request.method === 'POST') {
 }
 
 // Get current data
-const projects = getAllProjects();
+const projects = await getAllProjects();
 ---
 
 <AdminLayout title="Projects">

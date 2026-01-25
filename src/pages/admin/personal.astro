@@ -4,7 +4,7 @@ import { validateRequest } from '../../lib/auth';
 import { getPersonalInfo, updatePersonalInfo } from '../../lib/db';
 
 // Auth check
-const { isAuthenticated } = validateRequest(Astro.request);
+const { isAuthenticated } = await validateRequest(Astro.request);
 if (!isAuthenticated) {
     return Astro.redirect('/admin/login');
 }
@@ -29,7 +29,7 @@ if (Astro.request.method === 'POST') {
             linkedin: formData.get('linkedin') as string,
         };
         
-        updatePersonalInfo(data);
+        await updatePersonalInfo(data);
         message = 'Personal info updated successfully!';
         messageType = 'success';
     } catch (error) {
@@ -39,7 +39,7 @@ if (Astro.request.method === 'POST') {
 }
 
 // Get current data
-const info = getPersonalInfo() || {};
+const info = await getPersonalInfo() || {};
 ---
 
 <AdminLayout title="Personal Info">

@@ -1,7 +1,7 @@
 ---
 import { getSiteData } from '../lib/data';
 
-const data = getSiteData();
+const data = await getSiteData();
 const skills = data.skills;
 ---
 <div class="w-full overflow-hidden bg-slate-900/50 py-10 border-y border-slate-800 backdrop-blur-sm group">

@@ -6,14 +6,14 @@ import { getProjectBySlug, getAllProjects } from '../../lib/db';
 
 const { slug } = Astro.params;
 
-const project = getProjectBySlug(slug as string);
+const project = await getProjectBySlug(slug as string);
 
 if (!project) {
     return Astro.redirect('/');
 }
 
 // Get other projects for "More Projects" section
-const allProjects = getAllProjects().filter((p: any) => p.id !== project.id).slice(0, 3);
+const allProjects = (await getAllProjects()).filter((p: any) => p.id !== project.id).slice(0, 3);
 
 // Parse gallery images
 const galleryImages = project.gallery_images || [];

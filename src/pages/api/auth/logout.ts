@@ -7,7 +7,7 @@ export const POST: APIRoute = async ({ request, redirect, cookies }) => {
         const sessionId = getSessionFromCookie(cookieHeader);
         
         if (sessionId) {
-            deleteSession(sessionId);
+            await deleteSession(sessionId);
         }
         
         // Clear cookie

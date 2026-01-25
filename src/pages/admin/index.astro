@@ -4,16 +4,16 @@ import { validateRequest } from '../../lib/auth';
 import { getPersonalInfo, getAllSkills, getAllExperience, getAllProjects } from '../../lib/db';
 
 // Auth check
-const { isAuthenticated } = validateRequest(Astro.request);
+const { isAuthenticated } = await validateRequest(Astro.request);
 if (!isAuthenticated) {
     return Astro.redirect('/admin/login');
 }
 
 // Get stats
-const personalInfo = getPersonalInfo();
-const skills = getAllSkills();
-const experience = getAllExperience();
-const projects = getAllProjects();
+const personalInfo = await getPersonalInfo();
+const skills = await getAllSkills();
+const experience = await getAllExperience();
+const projects = await getAllProjects();
 ---
 
 <AdminLayout title="Dashboard">

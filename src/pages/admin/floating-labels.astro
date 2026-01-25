@@ -4,7 +4,7 @@ import { validateRequest } from '../../lib/auth';
 import { getAllFloatingLabels, addFloatingLabel, deleteFloatingLabel, updateFloatingLabel } from '../../lib/db';
 
 // Auth check
-const { isAuthenticated } = validateRequest(Astro.request);
+const { isAuthenticated } = await validateRequest(Astro.request);
 if (!isAuthenticated) {
     return Astro.redirect('/admin/login');
 }
@@ -21,13 +21,13 @@ if (Astro.request.method === 'POST') {
         if (action === 'add') {
             const label = formData.get('label') as string;
             if (label && label.trim()) {
-                addFloatingLabel(label.trim());
+                await addFloatingLabel(label.trim());
                 message = 'Floating label added successfully!';
                 messageType = 'success';
             }
         } else if (action === 'delete') {
             const id = parseInt(formData.get('id') as string);
-            deleteFloatingLabel(id);
+            await deleteFloatingLabel(id);
             message = 'Floating label deleted successfully!';
             messageType = 'success';
         } else if (action === 'update') {
@@ -35,7 +35,7 @@ if (Astro.request.method === 'POST') {
             const label = formData.get('label') as string;
             const sortOrder = parseInt(formData.get('sort_order') as string) || 0;
             if (label && label.trim()) {
-                updateFloatingLabel(id, label.trim(), sortOrder);
+                await updateFloatingLabel(id, label.trim(), sortOrder);
                 message = 'Floating label updated successfully!';
                 messageType = 'success';
             }
@@ -47,7 +47,7 @@ if (Astro.request.method === 'POST') {
 }
 
 // Get current data
-const floatingLabels = getAllFloatingLabels();
+const floatingLabels = await getAllFloatingLabels();
 ---
 
 <AdminLayout title="Floating Labels">
