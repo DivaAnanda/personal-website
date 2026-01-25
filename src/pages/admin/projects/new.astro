@@ -1,0 +1,276 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { validateRequest } from '../../../lib/auth';
+import { addProject } from '../../../lib/db';
+import fs from 'fs';
+import path from 'path';
+
+// Auth check
+const { isAuthenticated } = validateRequest(Astro.request);
+if (!isAuthenticated) {
+    return Astro.redirect('/admin/login');
+}
+
+let message = '';
+let messageType = '';
+
+// Handle image upload helper
+async function handleImageUpload(file: File, subfolder: string = 'projects'): Promise<string | null> {
+    if (!file || file.size === 0) return null;
+    
+    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', subfolder);
+    if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    
+    const ext = path.extname(file.name);
+    const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}${ext}`;
+    const filePath = path.join(uploadsDir, filename);
+    
+    const buffer = Buffer.from(await file.arrayBuffer());
+    fs.writeFileSync(filePath, buffer);
+    
+    return `/uploads/${subfolder}/${filename}`;
+}
+
+// Handle POST request
+if (Astro.request.method === 'POST') {
+    try {
+        const formData = await Astro.request.formData();
+        
+        // Handle image uploads
+        const thumbnailFile = formData.get('thumbnail') as File;
+        const heroFile = formData.get('hero_image') as File;
+        
+        const thumbnailPath = await handleImageUpload(thumbnailFile);
+        const heroPath = await handleImageUpload(heroFile, 'projects/heroes');
+        
+        // Handle gallery images (up to 6)
+        const galleryImages: string[] = [];
+        for (let i = 1; i <= 6; i++) {
+            const galleryFile = formData.get(`gallery_${i}`) as File;
+            const galleryPath = await handleImageUpload(galleryFile, 'projects/gallery');
+            if (galleryPath) {
+                galleryImages.push(galleryPath);
+            }
+        }
+        
+        // Generate slug from title
+        const title = formData.get('title') as string;
+        const slug = title.toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-');
+        
+        const data = {
+            title,
+            slug,
+            description: formData.get('description') as string,
+            full_content: formData.get('full_content') as string,
+            tech: (formData.get('tech') as string)?.split(',').map(t => t.trim()).filter(Boolean) || [],
+            image_path: thumbnailPath,
+            hero_image: heroPath,
+            gallery_images: galleryImages,
+            trailer_url: formData.get('trailer_url') as string || null,
+            project_role: formData.get('project_role') as string || null,
+            project_date: formData.get('project_date') as string || null,
+            highlight: formData.get('highlight') as string || null,
+            challenge_solution: formData.get('challenge_solution') as string || null,
+            link: formData.get('link') as string,
+            github: formData.get('github') as string,
+            featured: formData.get('featured') === 'on',
+            sort_order: parseInt(formData.get('sort_order') as string) || 0,
+        };
+        
+        addProject(data);
+        return Astro.redirect('/admin/projects?success=1');
+    } catch (error) {
+        console.error(error);
+        message = 'Failed to create project';
+        messageType = 'error';
+    }
+}
+---
+
+<AdminLayout title="New Project">
+    <div class="page-header">
+        <a href="/admin/projects" class="text-slate-400 hover:text-white text-sm flex items-center gap-2 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            Back to Projects
+        </a>
+        <h1 class="page-title">Add New Project</h1>
+        <p class="page-description">Create a new project for your portfolio.</p>
+    </div>
+    
+    {message && (
+        <div class={`alert ${messageType === 'success' ? 'alert-success' : 'alert-error'}`}>
+            {message}
+        </div>
+    )}
+    
+    <form method="POST" enctype="multipart/form-data" class="space-y-6 max-w-4xl">
+        
+        <!-- Basic Info -->
+        <div class="card">
+            <h2 class="text-lg font-semibold text-white mb-4">Basic Information</h2>
+            <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="title" class="form-label">Project Title *</label>
+                        <input type="text" id="title" name="title" required class="form-input" placeholder="My Awesome Project" />
+                    </div>
+                    <div>
+                        <label for="project_date" class="form-label">Project Date</label>
+                        <input type="text" id="project_date" name="project_date" class="form-input" placeholder="e.g., Dec 2025" />
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="project_role" class="form-label">Your Role</label>
+                        <input type="text" id="project_role" name="project_role" class="form-input" placeholder="e.g., Project Manager, Game Developer" />
+                    </div>
+                    <div>
+                        <label for="highlight" class="form-label">Achievement Highlight</label>
+                        <input type="text" id="highlight" name="highlight" class="form-input" placeholder="e.g., 🏆 Best Capstone Project" />
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="description" class="form-label">Short Description</label>
+                    <textarea id="description" name="description" class="form-textarea" rows="2" placeholder="A brief description for the project card..."></textarea>
+                </div>
+                
+                <div>
+                    <label for="tech" class="form-label">Technologies (comma-separated)</label>
+                    <input type="text" id="tech" name="tech" class="form-input" placeholder="React, TypeScript, Node.js" />
+                </div>
+            </div>
+        </div>
+        
+        <!-- Images -->
+        <div class="card">
+            <h2 class="text-lg font-semibold text-white mb-4">Images</h2>
+            <div class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="form-label">Card Thumbnail</label>
+                        <div class="file-upload" onclick="document.getElementById('thumbnail').click()">
+                            <input type="file" id="thumbnail" name="thumbnail" accept="image/*" class="hidden" onchange="previewImage(this, 'thumbnail-preview')" />
+                            <div id="thumbnail-preview-placeholder">
+                                <p class="text-slate-400 text-sm">Click to upload</p>
+                                <p class="text-xs text-slate-500">For project cards</p>
+                            </div>
+                            <img id="thumbnail-preview" src="" alt="" class="hidden max-h-32 mx-auto rounded" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label">Hero Image (Large)</label>
+                        <div class="file-upload" onclick="document.getElementById('hero_image').click()">
+                            <input type="file" id="hero_image" name="hero_image" accept="image/*" class="hidden" onchange="previewImage(this, 'hero-preview')" />
+                            <div id="hero-preview-placeholder">
+                                <p class="text-slate-400 text-sm">Click to upload</p>
+                                <p class="text-xs text-slate-500">For project detail page header</p>
+                            </div>
+                            <img id="hero-preview" src="" alt="" class="hidden max-h-32 mx-auto rounded" />
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="form-label">Documentation Gallery (min 3 images)</label>
+                    <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                            <div class="file-upload aspect-square p-2" onclick={`document.getElementById('gallery_${i}').click()`}>
+                                <input type="file" id={`gallery_${i}`} name={`gallery_${i}`} accept="image/*" class="hidden" onchange={`previewImage(this, 'gallery-preview-${i}')`} />
+                                <div id={`gallery-placeholder-${i}`} class="flex flex-col items-center justify-center h-full">
+                                    <span class="text-slate-500 text-2xl">{i}</span>
+                                </div>
+                                <img id={`gallery-preview-${i}`} src="" alt="" class="hidden w-full h-full object-cover rounded" />
+                            </div>
+                        ))}
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">Upload at least 3 images for the documentation carousel</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Media -->
+        <div class="card">
+            <h2 class="text-lg font-semibold text-white mb-4">Media & Content</h2>
+            <div class="space-y-4">
+                <div>
+                    <label for="trailer_url" class="form-label">Trailer Video URL (optional)</label>
+                    <input type="url" id="trailer_url" name="trailer_url" class="form-input" placeholder="https://www.youtube.com/watch?v=..." />
+                    <p class="text-xs text-slate-500 mt-1">YouTube or direct video URL</p>
+                </div>
+                
+                <div>
+                    <label for="full_content" class="form-label">Full Description</label>
+                    <textarea id="full_content" name="full_content" class="form-textarea" rows="6" placeholder="Detailed description for the project detail page..."></textarea>
+                </div>
+                
+                <div>
+                    <label for="challenge_solution" class="form-label">Challenge & Solution (quote)</label>
+                    <textarea id="challenge_solution" name="challenge_solution" class="form-textarea" rows="2" placeholder="The main challenge was X. We solved it by Y..."></textarea>
+                    <p class="text-xs text-slate-500 mt-1">Will be displayed as a quote below the description</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Links -->
+        <div class="card">
+            <h2 class="text-lg font-semibold text-white mb-4">Links & Options</h2>
+            <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="link" class="form-label">Live Demo URL</label>
+                        <input type="url" id="link" name="link" class="form-input" placeholder="https://example.com" />
+                    </div>
+                    <div>
+                        <label for="github" class="form-label">GitHub URL</label>
+                        <input type="url" id="github" name="github" class="form-input" placeholder="https://github.com/user/repo" />
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-6">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="featured" class="w-4 h-4 rounded border-slate-600 bg-slate-900 text-blue-600" />
+                        <span class="text-slate-300">Featured project</span>
+                    </label>
+                    <div class="flex items-center gap-2">
+                        <label for="sort_order" class="text-slate-300">Sort Order:</label>
+                        <input type="number" id="sort_order" name="sort_order" value="0" class="form-input w-20" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Submit -->
+        <div class="flex gap-4">
+            <button type="submit" class="btn btn-primary">Create Project</button>
+            <a href="/admin/projects" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</AdminLayout>
+
+<script>
+    function previewImage(input, previewId) {
+        const preview = document.getElementById(previewId);
+        const placeholder = document.getElementById(previewId + '-placeholder') || document.getElementById(previewId.replace('preview', 'placeholder'));
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+                preview.classList.remove('hidden');
+                if (placeholder) placeholder.classList.add('hidden');
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    
+    window.previewImage = previewImage;
+</script>

@@ -2,9 +2,9 @@
   "personal": {
     "name": "I Gede Surya Diva Ananda",
     "nickname": "Diva",
-    "role": "Technology Enthusiast",
-    "tagline": "Bridging creativity and code — exploring game development, web technologies, and AI to craft meaningful digital experiences.",
-    "about": "As an Informatics student at Universitas Udayana, I am pursuing a Bachelor of Computer Science with a focus on honing my skills in full-stack web development and exploring AI integration. Through my diverse experiences, including serving as Secretary II of HIMAIF Udayana and interning as a Game Developer at PT. inAReality Studio Nusantara, I have actively contributed to enhancing organizational workflows and exploring creative aspects of software development. My goal is to leverage my technical expertise and collaborative approach to drive innovation and impactful solutions in technology.",
+    "role": "Web & Game Development Enthusiast",
+    "tagline": "A 5th-semester Informatics student at Udayana University focusing on full-stack web and game development. Best Graduate from 'Asah' program by Dicoding and Accenture.",
+    "about": "As a 5th-semester Informatics student at Udayana University with a 3.94 GPA, I focus on full-stack web and game development. I recently graduated as a Best Graduate from the 'Asah' program by Dicoding and Accenture, mastering industry-standard technical and professional skills.\n\nMy professional growth is driven by leadership roles, currently serving as Secretary I of HIMAIF Udayana and having previously held the Vice President position for INVENTION, a national IT competition. I have a proven track record in project management, successfully leading 'Accenprove' to win Best Capstone Project and 'BlinkSafe' to secure 3rd place in a national PKM competition.\n\nI am dedicated to merging my technical expertise in Web, AI, and Game Development with a strategic leadership approach to deliver innovative, user-centric solutions that make a real-world impact.",
     "location": "Badung, Bali, Indonesia",
     "email": "gedesuryadiva@gmail.com",
     "phone": "+6285738454307"
@@ -15,72 +15,139 @@
     "email": "mailto:gedesuryadiva@gmail.com"
   },
   "skills": [
-    "Unity", "Unreal Engine", "React", "JavaScript", "Python",
-    "Flutter", "Figma", "Premiere Pro", "AWS", "Git",
-    "HTML/CSS", "SQLite", "Game Design", "AI Integration", "Web Development"
+    "Game Development", "Artificial Intelligence", "Front-End Development",
+    "Unity", "React", "JavaScript", "Python", "Flutter", "Figma",
+    "Premiere Pro", "AWS", "Git", "HTML/CSS", "Web Development"
   ],
   "education": {
     "degree": "Bachelor of Computer Science",
     "major": "Informatics",
     "university": "Universitas Udayana",
-    "period": "2023 - 2027",
-    "gpa": "3.94"
+    "period": "Sep 2023 - Sep 2027",
+    "gpa": "3.94",
+    "semester": "5th Semester"
   },
   "experience": [
     {
       "id": 1,
       "role": "Front-End Web & Back-End with AI Cohort",
-      "company": "Asah led by Dicoding",
-      "date": "Aug 2025 - Present",
-      "description": "Developing comprehensive understanding of web application development, front-end technologies, back-end development on AWS platform, and AI integration into web applications.",
-      "tech": ["AWS", "JavaScript", "AI"]
+      "company": "Asah led by Dicoding in association with Accenture",
+      "date": "Aug 2025 - Jan 2026",
+      "description": "Selected as one of the Best Graduates (Final Score: 93.95/100) in the Asah program, an intensive 938-hour full-stack career acceleration by Dicoding and Accenture. Led the capstone project 'Accenprove' as Project Manager, building a digital reporting platform that secured the Best Capstone Project award.",
+      "tech": ["React", "JavaScript", "AWS", "AI Integration", "Project Management"]
     },
     {
       "id": 2,
       "role": "Game Developer Intern",
       "company": "PT. inAReality Studio Nusantara",
       "date": "Jul 2025 - Sep 2025",
-      "description": "Learned to create a Game Design Document and successfully prototyped my first game called 'Project Sandikala' within a limited timeframe.",
-      "tech": ["Unity", "Game Design", "Prototyping"]
+      "description": "Introduced to the exciting world of game development at an Indonesian creative studio specializing in interactive technology and immersive digital media. Created a Game Design Document and successfully prototyped 'Project Sandikala' within a limited timeframe. This experience ignited my passion for game design and development.",
+      "tech": ["Unity", "Game Design", "C#", "GDD", "Prototyping"]
     },
     {
       "id": 3,
-      "role": "Secretary II",
+      "role": "Secretary I",
       "company": "HIMAIF Udayana",
-      "date": "Dec 2024 - Present",
-      "description": "Ensuring seamless flow of paperwork and communication between the organization and the Faculty of Natural Science and Mathematics. Managing permits and documentation for organizational initiatives.",
-      "tech": ["Leadership", "Communication", "Organization"]
+      "date": "Dec 2025 - Present",
+      "description": "Lead the organization's administrative operations, overseeing the standardization of correspondence protocols and archival systems to drive operational efficiency across all work programs. Serve as the administrative authority for legal permits and formal communication from HIMAIF Udayana with the Faculty.",
+      "tech": ["Leadership", "Administration", "Communication", "Strategic Planning"]
     },
     {
       "id": 4,
+      "role": "Secretary II",
+      "company": "HIMAIF Udayana",
+      "date": "Dec 2024 - Nov 2025",
+      "description": "Ensured the seamless flow of paperwork and communication between the organization and the Faculty of Natural Science and Mathematics. Coordinated with various student bodies to strengthen collaboration and streamline processes, fostering a more integrated academic environment.",
+      "tech": ["Administration", "Communication", "Coordination"]
+    },
+    {
+      "id": 5,
+      "role": "Secretary - National Webinar of Informatics (WEBNAS) 2025",
+      "company": "HIMAIF Udayana",
+      "date": "Feb 2025 - Sep 2025",
+      "description": "A work program of the Informatics Student Association of Udayana University which oversees information dissemination activities in the field of Informatics nationally through webinars. Created paperwork for activities in accordance with regulations and ensured all activities are permitted and under legal supervision.",
+      "tech": ["Event Management", "Documentation", "Communication"]
+    },
+    {
+      "id": 6,
+      "role": "Core Team (Secretary) Supremasi XVIII",
+      "company": "HIMAIF Udayana",
+      "date": "Jan 2025 - Apr 2025",
+      "description": "Organized team divisions including public relations, event organization, logistics, design, and competition. Managed paperwork for events, including venue bookings and permits. Facilitated communication between teams and the internal core team to enhance collaboration and efficiency.",
+      "tech": ["Event Management", "Team Coordination", "Documentation"]
+    },
+    {
+      "id": 7,
       "role": "Vice Chairman",
       "company": "INVENTION 2024",
       "date": "Feb 2024 - Nov 2024",
-      "description": "Directed the full event lifecycle for Invention 2024, a national-scale IT competition for hundreds of students. Managed collaboration between teams from different divisions.",
-      "tech": ["Event Management", "Leadership", "Team Coordination"]
+      "description": "Directed the full event lifecycle for Invention 2024, a national-scale IT competition for hundreds of students. Managed the collaboration between teams from different divisions (planning, partnerships, logistics) to ensure a successful execution. Advanced an environment of innovation that supported impactful knowledge-sharing among participants across Indonesia.",
+      "tech": ["Event Management", "Leadership", "Team Coordination", "Strategic Planning"]
+    },
+    {
+      "id": 8,
+      "role": "Trainee / Freelancer",
+      "company": "Subbox.id",
+      "date": "Feb 2024 - Aug 2024",
+      "description": "An organization that services caption making for content creators in many fields, primarily in Technologies. Created transcripts and captions for videos on YouTube or confidential videos, matching Indonesian language and grammar or requested language style.",
+      "tech": ["Video Editing", "Transcription", "Indonesian Language"]
     }
   ],
   "projects": [
     {
       "id": 1,
-      "title": "Project Sandikala",
-      "description": "A game prototype developed during my internship at PT. inAReality Studio Nusantara. Created within a limited timeframe, featuring complete game design documentation.",
-      "tech": ["Unity", "Game Design", "C#"],
-      "image": "linear-gradient(to bottom right, #1e293b, #0f172a)",
+      "title": "Accenprove",
+      "description": "A web-based digital reporting platform featuring a secure Role-Based Access Control (RBAC) system, part of Asah's program capstone project. Led a cross-functional team of 5 to develop the platform for digitizing official reports with automated document generation.",
+      "tech": ["React", "JavaScript", "AWS", "RBAC", "Document Generation"],
+      "image": "linear-gradient(to bottom right, #1e40af, #0f172a)",
       "link": "#",
-      "github": "#"
+      "github": "#",
+      "date": "Dec 2025",
+      "role": "Project Manager"
+    },
+    {
+      "id": 2,
+      "title": "BlinkSafe",
+      "description": "An IoT-based wearable device awarded 3rd Winner in the PKM-KC competition at Udayana University, developed to mitigate road accidents through real-time physiological monitoring. Engineered a responsive detection system using integrated Infrared and Gyroscope sensors.",
+      "tech": ["IoT", "Arduino", "Infrared Sensor", "Gyroscope", "C++"],
+      "image": "linear-gradient(to bottom right, #059669, #0f172a)",
+      "link": "#",
+      "github": "#",
+      "date": "Sep 2025",
+      "role": "Project Manager"
+    },
+    {
+      "id": 3,
+      "title": "Project Sandikala",
+      "description": "An exponentially progressive survival-roguelike game prototype developed during an intensive internship at PT. inAReality Studio Nusantara. Engineered an exponentially scaling difficulty system where enemy attributes and resource scarcity evolve dynamically based on survival time.",
+      "tech": ["Unity", "C#", "Game Design", "GDD", "Roguelike"],
+      "image": "linear-gradient(to bottom right, #7c3aed, #0f172a)",
+      "link": "#",
+      "github": "#",
+      "date": "Sep 2025",
+      "role": "Game Developer"
     }
   ],
   "achievements": [
     {
-      "title": "1st Place PKM-GFT",
-      "event": "PKM Competition 2024 Udayana University",
-      "date": "Sep 2024"
+      "title": "Best Graduate - Front-End Web & Back-End with AI",
+      "event": "Asah led by Dicoding in association with Accenture",
+      "date": "Jan 2026"
+    },
+    {
+      "title": "Best Capstone Project",
+      "event": "Asah led by Dicoding in association with Accenture",
+      "date": "Jan 2026"
     },
     {
       "title": "3rd Place PKM-KC",
       "event": "PKM Competition 2025 Udayana University",
       "date": "Sep 2025"
+    },
+    {
+      "title": "1st Place PKM-GFT",
+      "event": "PKM Competition 2024 Udayana University",
+      "date": "Sep 2024"
     },
     {
       "title": "Finalist Videography",
@@ -89,15 +156,15 @@
     }
   ],
   "certifications": [
-    "Belajar Dasar Git dengan GitHub",
     "Belajar Dasar Pemrograman JavaScript",
     "Belajar Membuat Aplikasi Flutter untuk Pemula",
-    "Belajar Back-End Pemula dengan JavaScript",
+    "Introduction to Financial Literacy",
+    "Career Management Essentials",
     "Belajar Dasar Pemrograman Web"
   ],
   "seo": {
-    "title": "I Gede Surya Diva Ananda | Technology Enthusiast",
-    "description": "Portfolio of I Gede Surya Diva Ananda - Computer Science student at Universitas Udayana, passionate about game development, web technologies, and AI.",
+    "title": "I Gede Surya Diva Ananda | Web & Game Development Enthusiast",
+    "description": "Portfolio of I Gede Surya Diva Ananda - 5th-semester Computer Science student at Universitas Udayana, passionate about game development, web technologies, and AI. Best Graduate from Asah program.",
     "url": "https://divaananda.com",
     "image": "/og-image.png"
   }

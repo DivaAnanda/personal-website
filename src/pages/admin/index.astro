@@ -1,0 +1,176 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { validateRequest } from '../../lib/auth';
+import { getPersonalInfo, getAllSkills, getAllExperience, getAllProjects } from '../../lib/db';
+
+// Auth check
+const { isAuthenticated } = validateRequest(Astro.request);
+if (!isAuthenticated) {
+    return Astro.redirect('/admin/login');
+}
+
+// Get stats
+const personalInfo = getPersonalInfo();
+const skills = getAllSkills();
+const experience = getAllExperience();
+const projects = getAllProjects();
+---
+
+<AdminLayout title="Dashboard">
+    <div class="page-header">
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-description">Welcome back! Here's an overview of your website content.</p>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="card">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400">
+                        <circle cx="12" cy="8" r="5"/>
+                        <path d="M20 21a8 8 0 0 0-16 0"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-white">1</p>
+                    <p class="text-sm text-slate-400">Personal Info</p>
+                </div>
+            </div>
+            <a href="/admin/personal" class="mt-4 text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1">
+                Edit Info →
+            </a>
+        </div>
+        
+        <div class="card">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-400">
+                        <path d="M12 2v4"/>
+                        <path d="m6.8 15-3.5 2"/>
+                        <path d="m20.7 7-3.5 2"/>
+                        <path d="M6.8 9 3.3 7"/>
+                        <path d="m20.7 17-3.5-2"/>
+                        <circle cx="12" cy="12" r="4"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-white">{skills.length}</p>
+                    <p class="text-sm text-slate-400">Skills</p>
+                </div>
+            </div>
+            <a href="/admin/skills" class="mt-4 text-green-400 hover:text-green-300 text-sm flex items-center gap-1">
+                Manage Skills →
+            </a>
+        </div>
+        
+        <div class="card">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-400">
+                        <rect width="20" height="14" x="2" y="7" rx="2" ry="2"/>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-white">{experience.length}</p>
+                    <p class="text-sm text-slate-400">Experience</p>
+                </div>
+            </div>
+            <a href="/admin/experience" class="mt-4 text-purple-400 hover:text-purple-300 text-sm flex items-center gap-1">
+                Manage Experience →
+            </a>
+        </div>
+        
+        <div class="card">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-orange-600/20 rounded-lg flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-orange-400">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-white">{projects.length}</p>
+                    <p class="text-sm text-slate-400">Projects</p>
+                </div>
+            </div>
+            <a href="/admin/projects" class="mt-4 text-orange-400 hover:text-orange-300 text-sm flex items-center gap-1">
+                Manage Projects →
+            </a>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="card">
+        <h2 class="text-xl font-bold text-white mb-4">Quick Actions</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="/admin/projects/new" class="btn btn-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Add New Project
+            </a>
+            <a href="/admin/experience/new" class="btn btn-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Add Experience
+            </a>
+            <a href="/" target="_blank" class="btn btn-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                    <polyline points="15 3 21 3 21 9"/>
+                    <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                View Live Website
+            </a>
+        </div>
+    </div>
+    
+    <!-- Recent Projects -->
+    {projects.length > 0 && (
+        <div class="card mt-6">
+            <h2 class="text-xl font-bold text-white mb-4">Recent Projects</h2>
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Tech Stack</th>
+                            <th>Featured</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {projects.slice(0, 5).map((project: any) => (
+                            <tr>
+                                <td class="font-medium text-white">{project.title}</td>
+                                <td>
+                                    <div class="flex flex-wrap gap-1">
+                                        {project.tech.slice(0, 3).map((t: string) => (
+                                            <span class="tag text-xs">{t}</span>
+                                        ))}
+                                    </div>
+                                </td>
+                                <td>
+                                    {project.featured ? (
+                                        <span class="text-green-400">Yes</span>
+                                    ) : (
+                                        <span class="text-slate-500">No</span>
+                                    )}
+                                </td>
+                                <td>
+                                    <a href={`/admin/projects/${project.id}`} class="text-blue-400 hover:text-blue-300">
+                                        Edit
+                                    </a>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    )}
+</AdminLayout>

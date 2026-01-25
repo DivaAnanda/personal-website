@@ -1,53 +1,102 @@
 ---
-import content from '../data/content.json';
+import { getSiteData } from '../lib/data';
+
+const data = getSiteData();
+const experience = data.experience;
 ---
 
 <section id="experience" class="py-24 px-6 md:px-12 bg-slate-950/50">
-  <div class="max-w-4xl mx-auto">
+  <div class="max-w-6xl mx-auto">
     <div class="text-center mb-16 scroll-animate">
       <h2 class="text-blue-500 font-mono text-sm tracking-widest mb-4">// EXPERIENCE</h2>
       <h3 class="text-3xl md:text-4xl font-display font-bold text-white">CAREER TIMELINE</h3>
     </div>
     
-    <div class="space-y-2">
-      {content.experience.map((exp, index) => (
-        <div class="scroll-animate relative pl-8 md:pl-0 group" style={`transition-delay: ${index * 100}ms`}>
-          <div class="md:grid md:grid-cols-[1fr_50px_1fr] md:gap-4 items-start">
-            
-            <!-- Date / Left Side -->
-            <div class="hidden md:block text-right pt-1 pr-6">
-              <span class="font-mono text-blue-400 text-sm">{exp.date}</span>
-            </div>
-
-            <!-- Timeline Line & Dot -->
-            <div class="hidden md:flex flex-col items-center h-full">
-              <div class="w-3 h-3 rounded-full bg-slate-700 border border-slate-600 group-hover:bg-blue-500 group-hover:border-blue-400 group-hover:scale-125 transition-all duration-300 z-10"></div>
-              {index < content.experience.length - 1 && (
-                <div class="w-[1px] h-full bg-slate-800 -mt-2"></div>
-              )}
-            </div>
-
-            <!-- Mobile View Line -->
-            <div class="absolute left-0 top-2 bottom-0 w-[1px] bg-slate-800 md:hidden"></div>
-            <div class="absolute left-[-5px] top-2 w-2.5 h-2.5 rounded-full bg-slate-700 md:hidden group-hover:bg-blue-500 transition-colors"></div>
-
-            <!-- Content / Right Side -->
-            <div class={`pb-12 ${index === content.experience.length - 1 ? 'pb-0' : ''} pl-6 md:pl-0`}>
-              <div class="md:hidden font-mono text-blue-400 text-xs mb-1">{exp.date}</div>
-              <h3 class="text-xl md:text-2xl font-bold text-slate-100 group-hover:text-blue-400 transition-colors">{exp.role}</h3>
-              <p class="text-base md:text-lg text-slate-400 mb-2 font-medium">{exp.company}</p>
-              <p class="text-slate-400 mb-4 leading-relaxed text-sm md:text-base">{exp.description}</p>
-              <div class="flex flex-wrap gap-2">
-                {exp.tech.map((t) => (
-                  <span class="px-3 py-1 bg-slate-800/50 border border-slate-700 rounded-full text-xs text-slate-300 font-mono">
-                    {t}
-                  </span>
-                ))}
+    <!-- Alternating Timeline -->
+    <div class="relative">
+      <!-- Center Line (Desktop) -->
+      <div class="hidden md:block absolute left-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-blue-500/50 via-slate-700 to-slate-800 -translate-x-1/2"></div>
+      
+      <!-- Experience Items -->
+      <div class="space-y-6 md:space-y-0">
+        {experience.map((exp, index) => {
+          const isEven = index % 2 === 0;
+          return (
+            <div class="scroll-animate relative" style={`transition-delay: ${index * 100}ms`}>
+              
+              <!-- Desktop: Alternating Layout -->
+              <div class="hidden md:grid md:grid-cols-[1fr_60px_1fr] items-center">
+                
+                {/* Left Side */}
+                <div class={`${isEven ? 'pr-8' : ''}`}>
+                  {isEven && (
+                    <div class="group bg-slate-900/50 border border-slate-800 hover:border-blue-500/30 rounded-xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-blue-900/10 text-right">
+                      <span class="font-mono text-blue-400 text-xs tracking-wider">{exp.date}</span>
+                      <h3 class="text-xl font-bold text-slate-100 group-hover:text-blue-400 transition-colors mt-2">{exp.role}</h3>
+                      <p class="text-slate-400 font-medium">{exp.company}</p>
+                      <p class="text-slate-500 text-sm mt-3 leading-relaxed">{exp.description}</p>
+                      <div class="flex flex-wrap gap-2 mt-4 justify-end">
+                        {exp.tech.map((t) => (
+                          <span class="px-2.5 py-1 bg-slate-800/50 border border-slate-700 rounded-full text-xs text-slate-400 font-mono">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Center Dot */}
+                <div class="flex justify-center">
+                  <div class="w-4 h-4 rounded-full bg-slate-800 border-2 border-blue-500 shadow-lg shadow-blue-500/30 z-10"></div>
+                </div>
+                
+                {/* Right Side */}
+                <div class={`${!isEven ? 'pl-8' : ''}`}>
+                  {!isEven && (
+                    <div class="group bg-slate-900/50 border border-slate-800 hover:border-blue-500/30 rounded-xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-blue-900/10">
+                      <span class="font-mono text-blue-400 text-xs tracking-wider">{exp.date}</span>
+                      <h3 class="text-xl font-bold text-slate-100 group-hover:text-blue-400 transition-colors mt-2">{exp.role}</h3>
+                      <p class="text-slate-400 font-medium">{exp.company}</p>
+                      <p class="text-slate-500 text-sm mt-3 leading-relaxed">{exp.description}</p>
+                      <div class="flex flex-wrap gap-2 mt-4">
+                        {exp.tech.map((t) => (
+                          <span class="px-2.5 py-1 bg-slate-800/50 border border-slate-700 rounded-full text-xs text-slate-400 font-mono">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
+              
+              <!-- Mobile: Simple Timeline -->
+              <div class="md:hidden relative pl-8">
+                <!-- Line -->
+                <div class="absolute left-[7px] top-4 bottom-0 w-[2px] bg-slate-800"></div>
+                <!-- Dot -->
+                <div class="absolute left-0 top-4 w-4 h-4 rounded-full bg-slate-800 border-2 border-blue-500"></div>
+                
+                <div class="group bg-slate-900/50 border border-slate-800 rounded-xl p-5">
+                  <span class="font-mono text-blue-400 text-xs">{exp.date}</span>
+                  <h3 class="text-lg font-bold text-slate-100 mt-1">{exp.role}</h3>
+                  <p class="text-slate-400 text-sm font-medium">{exp.company}</p>
+                  <p class="text-slate-500 text-sm mt-2 leading-relaxed">{exp.description}</p>
+                  <div class="flex flex-wrap gap-1.5 mt-3">
+                    {exp.tech.map((t) => (
+                      <span class="px-2 py-0.5 bg-slate-800/50 border border-slate-700 rounded-full text-xs text-slate-400 font-mono">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
             </div>
-          </div>
-        </div>
-      ))}
+          );
+        })}
+      </div>
     </div>
   </div>
 </section>

@@ -1,0 +1,155 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { validateRequest } from '../../lib/auth';
+import { getAllSkills, addSkill, deleteSkill, updateSkill } from '../../lib/db';
+
+// Auth check
+const { isAuthenticated } = validateRequest(Astro.request);
+if (!isAuthenticated) {
+    return Astro.redirect('/admin/login');
+}
+
+let message = '';
+let messageType = '';
+
+// Handle POST request
+if (Astro.request.method === 'POST') {
+    try {
+        const formData = await Astro.request.formData();
+        const action = formData.get('action') as string;
+        
+        if (action === 'add') {
+            const name = formData.get('name') as string;
+            if (name && name.trim()) {
+                addSkill(name.trim());
+                message = 'Skill added successfully!';
+                messageType = 'success';
+            }
+        } else if (action === 'delete') {
+            const id = parseInt(formData.get('id') as string);
+            deleteSkill(id);
+            message = 'Skill deleted successfully!';
+            messageType = 'success';
+        } else if (action === 'update') {
+            const id = parseInt(formData.get('id') as string);
+            const name = formData.get('name') as string;
+            const sortOrder = parseInt(formData.get('sort_order') as string) || 0;
+            if (name && name.trim()) {
+                updateSkill(id, name.trim(), sortOrder);
+                message = 'Skill updated successfully!';
+                messageType = 'success';
+            }
+        }
+    } catch (error) {
+        message = 'An error occurred';
+        messageType = 'error';
+    }
+}
+
+// Get current data
+const skills = getAllSkills();
+---
+
+<AdminLayout title="Skills">
+    <div class="page-header">
+        <h1 class="page-title">Skills</h1>
+        <p class="page-description">Manage the skills displayed in the marquee on your website.</p>
+    </div>
+    
+    {message && (
+        <div class={`alert ${messageType === 'success' ? 'alert-success' : 'alert-error'}`}>
+            {message}
+        </div>
+    )}
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Add New Skill -->
+        <div class="card">
+            <h2 class="text-lg font-semibold text-white mb-4">Add New Skill</h2>
+            <form method="POST">
+                <input type="hidden" name="action" value="add" />
+                <div class="space-y-4">
+                    <div>
+                        <label for="name" class="form-label">Skill Name</label>
+                        <input 
+                            type="text" 
+                            id="name" 
+                            name="name" 
+                            required 
+                            class="form-input"
+                            placeholder="e.g., React, Unity, Python"
+                        />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Add Skill
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Current Skills -->
+        <div class="lg:col-span-2 card">
+            <h2 class="text-lg font-semibold text-white mb-4">
+                Current Skills ({skills.length})
+            </h2>
+            
+            {skills.length === 0 ? (
+                <p class="text-slate-400 text-center py-8">
+                    No skills added yet. Add your first skill to get started!
+                </p>
+            ) : (
+                <div class="space-y-2">
+                    {skills.map((skill: any, index: number) => (
+                        <div class="flex items-center gap-4 p-3 bg-slate-800/50 rounded-lg group hover:bg-slate-800 transition-colors">
+                            <span class="text-slate-500 text-sm font-mono w-8">{index + 1}</span>
+                            <span class="flex-1 text-white font-medium">{skill.name}</span>
+                            <form method="POST" class="flex gap-2">
+                                <input type="hidden" name="action" value="delete" />
+                                <input type="hidden" name="id" value={skill.id} />
+                                <button 
+                                    type="submit" 
+                                    class="text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onclick="return confirm('Are you sure you want to delete this skill?')"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 6h18"/>
+                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    </div>
+    
+    <!-- Preview -->
+    <div class="card mt-6">
+        <h2 class="text-lg font-semibold text-white mb-4">Marquee Preview</h2>
+        <div class="bg-slate-900/50 py-6 rounded-lg overflow-hidden border border-slate-800">
+            <div class="flex gap-8 animate-marquee whitespace-nowrap">
+                {[...skills, ...skills].map((skill: any) => (
+                    <span class="text-2xl font-bold uppercase text-slate-400 opacity-50">
+                        {skill.name}
+                    </span>
+                ))}
+            </div>
+        </div>
+    </div>
+</AdminLayout>
+
+<style>
+    @keyframes marquee {
+        from { transform: translateX(0); }
+        to { transform: translateX(-50%); }
+    }
+    .animate-marquee {
+        animation: marquee 20s linear infinite;
+    }
+</style>

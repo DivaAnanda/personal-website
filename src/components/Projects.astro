@@ -1,5 +1,8 @@
 ---
-import content from '../data/content.json';
+import { getSiteData } from '../lib/data';
+
+const data = getSiteData();
+const projects = data.projects;
 ---
 
 <section id="projects" class="py-24 px-6 md:px-12 max-w-7xl mx-auto">
@@ -9,7 +12,7 @@ import content from '../data/content.json';
       <h3 class="text-3xl md:text-4xl font-display font-bold text-white">FEATURED PROJECTS</h3>
     </div>
     <a 
-      href={content.socials.github}
+      href={data.socials.github}
       target="_blank"
       rel="noopener noreferrer"
       class="text-slate-400 hover:text-white flex items-center gap-2 text-sm font-bold tracking-wider transition-colors pb-1 border-b border-transparent hover:border-blue-500"
@@ -23,58 +26,93 @@ import content from '../data/content.json';
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-    {content.projects.map((project, index) => (
+    {projects.map((project, index) => (
       <div 
         class="scroll-animate group relative bg-slate-900 border border-slate-800 overflow-hidden hover:border-blue-500/50 transition-all duration-300 rounded-xl"
         style={`transition-delay: ${index * 100}ms`}
       >
-        <!-- Project Image/Background -->
-        <div class="aspect-video w-full overflow-hidden relative">
-          <div 
-            class="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
-            style={`background: ${project.image}`}
-          >
-            <!-- Mock UI for placeholder -->
-            <div class="absolute inset-4 bg-slate-950/20 backdrop-blur-sm rounded border border-white/10 flex items-center justify-center">
-              <div class="text-white/20 font-display font-bold text-2xl md:text-4xl uppercase tracking-widest rotate-12 text-center px-4">
-                {project.title}
+        <!-- Clickable Image Area - Goes to Detail Page -->
+        <a href={project.slug ? `/projects/${project.slug}` : '#'} class="block">
+          <div class="aspect-video w-full overflow-hidden relative">
+            {project.image ? (
+              <img 
+                src={project.image} 
+                alt={project.title}
+                class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+            ) : (
+              <div 
+                class="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
+                style="background: linear-gradient(to bottom right, #1e293b, #0f172a)"
+              >
+                <div class="absolute inset-4 bg-slate-950/20 backdrop-blur-sm rounded border border-white/10 flex items-center justify-center">
+                  <div class="text-white/20 font-display font-bold text-2xl md:text-4xl uppercase tracking-widest rotate-12 text-center px-4">
+                    {project.title}
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent opacity-90"></div>
           </div>
-          <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent opacity-90"></div>
-        </div>
+        </a>
 
         <!-- Project Info -->
         <div class="p-6 relative">
           <div class="flex justify-between items-start mb-4">
-            <h3 class="text-xl md:text-2xl font-bold text-slate-100 group-hover:text-blue-400 transition-colors">
-              {project.title}
-            </h3>
-            <div class="flex gap-3">
+            <a href={project.slug ? `/projects/${project.slug}` : '#'}>
+              <h3 class="text-xl md:text-2xl font-bold text-slate-100 group-hover:text-blue-400 transition-colors">
+                {project.title}
+              </h3>
+            </a>
+          </div>
+          <p class="text-slate-400 mb-4 line-clamp-2 text-sm md:text-base">{project.description}</p>
+          
+          <!-- Action Buttons -->
+          <div class="flex flex-wrap gap-2 mb-4">
+            {project.link && (
               <a 
-                href={project.github} 
-                class="text-slate-400 hover:text-white transition-colors"
-                aria-label={`View ${project.title} on GitHub`}
+                href={project.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded flex items-center gap-1.5 transition-colors"
+                onclick="event.stopPropagation();"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/>
-                  <path d="M9 18c-4.51 2-5-2-7-2"/>
-                </svg>
-              </a>
-              <a 
-                href={project.link} 
-                class="text-slate-400 hover:text-white transition-colors"
-                aria-label={`View ${project.title} live`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
                   <polyline points="15 3 21 3 21 9"/>
                   <line x1="10" y1="14" x2="21" y2="3"/>
                 </svg>
+                Live Demo
               </a>
-            </div>
+            )}
+            {project.github && (
+              <a 
+                href={project.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded flex items-center gap-1.5 transition-colors border border-slate-700"
+                onclick="event.stopPropagation();"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/>
+                  <path d="M9 18c-4.51 2-5-2-7-2"/>
+                </svg>
+                Code
+              </a>
+            )}
+            <a 
+              href={project.slug ? `/projects/${project.slug}` : '#'}
+              class="px-3 py-1.5 bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-white text-xs font-bold rounded flex items-center gap-1.5 transition-colors border border-slate-700/50"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              Details
+            </a>
           </div>
-          <p class="text-slate-400 mb-6 line-clamp-2 text-sm md:text-base">{project.description}</p>
+          
+          <!-- Tech Stack -->
           <div class="flex flex-wrap gap-2 mt-auto">
             {project.tech.map(t => (
               <span class="text-xs font-mono text-blue-300/80">#{t}</span>

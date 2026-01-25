@@ -1,0 +1,351 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { validateRequest } from '../../../lib/auth';
+import { getProjectById, updateProject } from '../../../lib/db';
+import fs from 'fs';
+import path from 'path';
+
+// Auth check
+const { isAuthenticated } = validateRequest(Astro.request);
+if (!isAuthenticated) {
+    return Astro.redirect('/admin/login');
+}
+
+const { id } = Astro.params;
+const projectId = parseInt(id as string);
+let project = getProjectById(projectId);
+
+if (!project) {
+    return Astro.redirect('/admin/projects');
+}
+
+let message = '';
+let messageType = '';
+
+// Handle image upload helper
+async function handleImageUpload(file: File, subfolder: string = 'projects'): Promise<string | null> {
+    if (!file || file.size === 0) return null;
+    
+    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', subfolder);
+    if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    
+    const ext = path.extname(file.name);
+    const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}${ext}`;
+    const filePath = path.join(uploadsDir, filename);
+    
+    const buffer = Buffer.from(await file.arrayBuffer());
+    fs.writeFileSync(filePath, buffer);
+    
+    return `/uploads/${subfolder}/${filename}`;
+}
+
+// Handle POST request
+if (Astro.request.method === 'POST') {
+    try {
+        const formData = await Astro.request.formData();
+        
+        // Handle image uploads (keep existing if no new upload)
+        const thumbnailFile = formData.get('thumbnail') as File;
+        const heroFile = formData.get('hero_image') as File;
+        
+        const thumbnailPath = await handleImageUpload(thumbnailFile) || project.image_path;
+        const heroPath = await handleImageUpload(heroFile, 'projects/heroes') || project.hero_image;
+        
+        // Handle gallery images - merge existing with new uploads
+        let galleryImages: string[] = project.gallery_images || [];
+        
+        for (let i = 1; i <= 6; i++) {
+            const galleryFile = formData.get(`gallery_${i}`) as File;
+            const galleryPath = await handleImageUpload(galleryFile, 'projects/gallery');
+            if (galleryPath) {
+                // Replace at position if exists, otherwise add
+                if (galleryImages[i - 1]) {
+                    galleryImages[i - 1] = galleryPath;
+                } else {
+                    galleryImages.push(galleryPath);
+                }
+            }
+        }
+        
+        // Handle gallery removal
+        const removeGallery = formData.getAll('remove_gallery') as string[];
+        if (removeGallery.length > 0) {
+            galleryImages = galleryImages.filter((_, idx) => !removeGallery.includes(idx.toString()));
+        }
+        
+        // Generate slug from title
+        const title = formData.get('title') as string;
+        const slug = title.toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-');
+        
+        const data = {
+            title,
+            slug,
+            description: formData.get('description') as string,
+            full_content: formData.get('full_content') as string,
+            tech: (formData.get('tech') as string)?.split(',').map(t => t.trim()).filter(Boolean) || [],
+            image_path: thumbnailPath,
+            hero_image: heroPath,
+            gallery_images: galleryImages,
+            trailer_url: formData.get('trailer_url') as string || null,
+            project_role: formData.get('project_role') as string || null,
+            project_date: formData.get('project_date') as string || null,
+            highlight: formData.get('highlight') as string || null,
+            challenge_solution: formData.get('challenge_solution') as string || null,
+            link: formData.get('link') as string,
+            github: formData.get('github') as string,
+            featured: formData.get('featured') === 'on',
+            sort_order: parseInt(formData.get('sort_order') as string) || 0,
+        };
+        
+        updateProject(projectId, data);
+        message = 'Project updated successfully!';
+        messageType = 'success';
+        
+        // Refresh project data
+        project = getProjectById(projectId);
+    } catch (error) {
+        console.error(error);
+        message = 'Failed to update project';
+        messageType = 'error';
+    }
+}
+
+const galleryImages = project.gallery_images || [];
+---
+
+<AdminLayout title={`Edit: ${project.title}`}>
+    <div class="page-header">
+        <a href="/admin/projects" class="text-slate-400 hover:text-white text-sm flex items-center gap-2 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            Back to Projects
+        </a>
+        <h1 class="page-title">Edit Project: {project.title}</h1>
+        <p class="page-description">Update project details and media.</p>
+    </div>
+    
+    {message && (
+        <div class={`alert ${messageType === 'success' ? 'alert-success' : 'alert-error'}`}>
+            {message}
+        </div>
+    )}
+    
+    <form method="POST" enctype="multipart/form-data" class="space-y-6 max-w-4xl">
+        
+        <!-- Basic Info -->
+        <div class="card">
+            <h2 class="text-lg font-semibold text-white mb-4">Basic Information</h2>
+            <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="title" class="form-label">Project Title *</label>
+                        <input type="text" id="title" name="title" required class="form-input" value={project.title} />
+                    </div>
+                    <div>
+                        <label for="project_date" class="form-label">Project Date</label>
+                        <input type="text" id="project_date" name="project_date" class="form-input" value={project.project_date || ''} placeholder="e.g., Dec 2025" />
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="project_role" class="form-label">Your Role</label>
+                        <input type="text" id="project_role" name="project_role" class="form-input" value={project.project_role || ''} placeholder="e.g., Project Manager" />
+                    </div>
+                    <div>
+                        <label for="highlight" class="form-label">Achievement Highlight</label>
+                        <input type="text" id="highlight" name="highlight" class="form-input" value={project.highlight || ''} placeholder="e.g., 🏆 Best Capstone Project" />
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="description" class="form-label">Short Description</label>
+                    <textarea id="description" name="description" class="form-textarea" rows="2">{project.description}</textarea>
+                </div>
+                
+                <div>
+                    <label for="tech" class="form-label">Technologies (comma-separated)</label>
+                    <input type="text" id="tech" name="tech" class="form-input" value={project.tech?.join(', ') || ''} />
+                </div>
+            </div>
+        </div>
+        
+        <!-- Images -->
+        <div class="card">
+            <h2 class="text-lg font-semibold text-white mb-4">Images</h2>
+            <div class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Thumbnail -->
+                    <div>
+                        <label class="form-label">Card Thumbnail</label>
+                        {project.image_path && (
+                            <div class="mb-2 p-2 bg-slate-800 rounded-lg">
+                                <img src={project.image_path} alt="Current thumbnail" class="max-h-32 mx-auto rounded" />
+                                <p class="text-xs text-slate-500 text-center mt-1">Current image</p>
+                            </div>
+                        )}
+                        <div class="file-upload" onclick="document.getElementById('thumbnail').click()">
+                            <input type="file" id="thumbnail" name="thumbnail" accept="image/*" class="hidden" onchange="previewImage(this, 'thumbnail-preview')" />
+                            <div id="thumbnail-preview-placeholder">
+                                <p class="text-slate-400 text-sm">{project.image_path ? 'Click to replace' : 'Click to upload'}</p>
+                            </div>
+                            <img id="thumbnail-preview" src="" alt="" class="hidden max-h-32 mx-auto rounded" />
+                        </div>
+                    </div>
+                    
+                    <!-- Hero Image -->
+                    <div>
+                        <label class="form-label">Hero Image (Large)</label>
+                        {project.hero_image && (
+                            <div class="mb-2 p-2 bg-slate-800 rounded-lg">
+                                <img src={project.hero_image} alt="Current hero" class="max-h-32 mx-auto rounded" />
+                                <p class="text-xs text-slate-500 text-center mt-1">Current image</p>
+                            </div>
+                        )}
+                        <div class="file-upload" onclick="document.getElementById('hero_image').click()">
+                            <input type="file" id="hero_image" name="hero_image" accept="image/*" class="hidden" onchange="previewImage(this, 'hero-preview')" />
+                            <div id="hero-preview-placeholder">
+                                <p class="text-slate-400 text-sm">{project.hero_image ? 'Click to replace' : 'Click to upload'}</p>
+                            </div>
+                            <img id="hero-preview" src="" alt="" class="hidden max-h-32 mx-auto rounded" />
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gallery -->
+                <div>
+                    <label class="form-label">Documentation Gallery (min 3 images for carousel)</label>
+                    
+                    <!-- Current Gallery Images -->
+                    {galleryImages.length > 0 && (
+                        <div class="mb-4">
+                            <p class="text-xs text-slate-500 mb-2">Current images:</p>
+                            <div class="grid grid-cols-3 md:grid-cols-6 gap-2">
+                                {galleryImages.map((img: string, idx: number) => (
+                                    <div class="relative group">
+                                        <img src={img} alt={`Gallery ${idx + 1}`} class="aspect-square object-cover rounded border border-slate-700" />
+                                        <label class="absolute inset-0 bg-red-600/80 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity rounded">
+                                            <input type="checkbox" name="remove_gallery" value={idx.toString()} class="hidden" />
+                                            <span class="text-white text-xs">Remove?</span>
+                                        </label>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    
+                    <!-- Add New Gallery Images -->
+                    <p class="text-xs text-slate-500 mb-2">Add new images:</p>
+                    <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                            <div class="file-upload aspect-square p-2" onclick={`document.getElementById('gallery_${i}').click()`}>
+                                <input type="file" id={`gallery_${i}`} name={`gallery_${i}`} accept="image/*" class="hidden" onchange={`previewImage(this, 'gallery-preview-${i}')`} />
+                                <div id={`gallery-placeholder-${i}`} class="flex flex-col items-center justify-center h-full">
+                                    <span class="text-slate-500 text-xl">+</span>
+                                </div>
+                                <img id={`gallery-preview-${i}`} src="" alt="" class="hidden w-full h-full object-cover rounded" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Media -->
+        <div class="card">
+            <h2 class="text-lg font-semibold text-white mb-4">Media & Content</h2>
+            <div class="space-y-4">
+                <div>
+                    <label for="trailer_url" class="form-label">Trailer Video URL (optional)</label>
+                    <input type="url" id="trailer_url" name="trailer_url" class="form-input" value={project.trailer_url || ''} placeholder="https://www.youtube.com/watch?v=..." />
+                    <p class="text-xs text-slate-500 mt-1">YouTube or direct video URL</p>
+                </div>
+                
+                <div>
+                    <label for="full_content" class="form-label">Full Description</label>
+                    <textarea id="full_content" name="full_content" class="form-textarea" rows="6">{project.full_content}</textarea>
+                </div>
+                
+                <div>
+                    <label for="challenge_solution" class="form-label">Challenge & Solution (quote)</label>
+                    <textarea id="challenge_solution" name="challenge_solution" class="form-textarea" rows="2">{project.challenge_solution}</textarea>
+                    <p class="text-xs text-slate-500 mt-1">Will be displayed as a quote below the description</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Links -->
+        <div class="card">
+            <h2 class="text-lg font-semibold text-white mb-4">Links & Options</h2>
+            <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="link" class="form-label">Live Demo URL</label>
+                        <input type="url" id="link" name="link" class="form-input" value={project.link || ''} />
+                    </div>
+                    <div>
+                        <label for="github" class="form-label">GitHub URL</label>
+                        <input type="url" id="github" name="github" class="form-input" value={project.github || ''} />
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-6">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="featured" class="w-4 h-4 rounded border-slate-600 bg-slate-900 text-blue-600" checked={project.featured} />
+                        <span class="text-slate-300">Featured project</span>
+                    </label>
+                    <div class="flex items-center gap-2">
+                        <label for="sort_order" class="text-slate-300">Sort Order:</label>
+                        <input type="number" id="sort_order" name="sort_order" value={project.sort_order} class="form-input w-20" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Preview Link -->
+        <div class="card bg-slate-800/50">
+            <div class="flex items-center justify-between">
+                <span class="text-slate-400">Preview this project:</span>
+                <a href={`/projects/${project.slug}`} target="_blank" class="text-blue-400 hover:text-blue-300 flex items-center gap-2">
+                    /projects/{project.slug}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                        <polyline points="15 3 21 3 21 9"/>
+                        <line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Submit -->
+        <div class="flex gap-4">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="/admin/projects" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</AdminLayout>
+
+<script>
+    function previewImage(input, previewId) {
+        const preview = document.getElementById(previewId);
+        const placeholder = document.getElementById(previewId + '-placeholder') || document.getElementById(previewId.replace('preview', 'placeholder'));
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+                preview.classList.remove('hidden');
+                if (placeholder) placeholder.classList.add('hidden');
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    
+    window.previewImage = previewImage;
+</script>

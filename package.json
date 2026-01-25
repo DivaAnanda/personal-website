@@ -9,8 +9,12 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/node": "^9.5.2",
     "@tailwindcss/vite": "^4.1.18",
     "astro": "^5.16.6",
-    "tailwindcss": "^4.1.18"
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.6.2",
+    "tailwindcss": "^4.1.18",
+    "uuid": "^13.0.0"
   }
 }

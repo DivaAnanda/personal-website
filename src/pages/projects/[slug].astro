@@ -1,0 +1,594 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+import { getProjectBySlug, getAllProjects } from '../../lib/db';
+
+const { slug } = Astro.params;
+
+const project = getProjectBySlug(slug as string);
+
+if (!project) {
+    return Astro.redirect('/');
+}
+
+// Get other projects for "More Projects" section
+const allProjects = getAllProjects().filter((p: any) => p.id !== project.id).slice(0, 3);
+
+// Parse gallery images
+const galleryImages = project.gallery_images || [];
+
+// For infinite carousel, we need to duplicate images at start and end
+// Clone last 3 images at the beginning, first 3 at the end
+const extendedGalleryImages = galleryImages.length >= 3 
+    ? [...galleryImages.slice(-3), ...galleryImages, ...galleryImages.slice(0, 3)]
+    : galleryImages;
+
+// Check if trailer is YouTube
+const isYouTube = project.trailer_url?.includes('youtube') || project.trailer_url?.includes('youtu.be');
+const getYouTubeEmbedUrl = (url: string) => {
+    if (url.includes('youtu.be/')) {
+        const id = url.split('youtu.be/')[1].split('?')[0];
+        return `https://www.youtube.com/embed/${id}`;
+    }
+    if (url.includes('watch?v=')) {
+        const id = url.split('watch?v=')[1].split('&')[0];
+        return `https://www.youtube.com/embed/${id}`;
+    }
+    return url;
+};
+---
+
+<Layout title={`${project.title} | I Gede Surya Diva Ananda`}>
+    <!-- Navbar Header -->
+    <Navbar />
+    
+    <main class="min-h-screen bg-[#060810] text-slate-300 pt-20 relative overflow-hidden">
+        <!-- Subtle Background Gradient Orbs -->
+        <div class="fixed inset-0 pointer-events-none z-0">
+            <div class="absolute top-1/4 -left-32 w-96 h-96 bg-blue-600/5 rounded-full blur-[120px]"></div>
+            <div class="absolute top-3/4 right-0 w-80 h-80 bg-blue-500/5 rounded-full blur-[100px]"></div>
+            <div class="absolute bottom-0 left-1/3 w-64 h-64 bg-indigo-600/5 rounded-full blur-[80px]"></div>
+        </div>
+        
+        <!-- Hero Section -->
+        <section class="relative h-screen min-h-[600px] overflow-hidden">
+            <!-- Hero Background -->
+            <div class="absolute inset-0">
+                {project.hero_image ? (
+                    <img 
+                        src={project.hero_image} 
+                        alt={project.title}
+                        class="w-full h-full object-cover"
+                    />
+                ) : (
+                    <div class="w-full h-full bg-gradient-to-br from-blue-900/30 via-slate-900 to-slate-950"></div>
+                )}
+                <!-- Overlay -->
+                <div class="absolute inset-0 bg-gradient-to-t from-[#060810] via-[#060810]/60 to-transparent"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-[#060810]/80 to-transparent"></div>
+            </div>
+            
+            <!-- Hero Content -->
+            <div class="relative z-10 h-full flex flex-col justify-center max-w-6xl mx-auto px-6 pt-16">
+                <!-- Back Button -->
+                <a href="/#projects" class="absolute top-8 left-6 inline-flex items-center gap-2 text-slate-400 hover:text-blue-400 transition-colors bg-slate-900/50 backdrop-blur-sm px-4 py-2 rounded-full border border-slate-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                    Back to Projects
+                </a>
+                
+                <!-- Project Meta -->
+                {project.project_date && (
+                    <span class="text-blue-400 font-mono text-sm mb-3">{project.project_date}</span>
+                )}
+                
+                <!-- Title -->
+                <h1 class="text-3xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-4 leading-tight">
+                    {project.title}
+                </h1>
+                
+                <!-- Role & Highlight -->
+                <div class="flex flex-wrap items-center gap-3 mb-5">
+                    {project.project_role && (
+                        <span class="px-4 py-2 bg-slate-800/80 backdrop-blur-sm rounded-full text-sm font-medium text-slate-200 border border-slate-700">
+                            {project.project_role}
+                        </span>
+                    )}
+                    {project.highlight && (
+                        <span class="px-4 py-2 bg-blue-600/20 backdrop-blur-sm rounded-full text-sm font-medium text-blue-300 border border-blue-500/30">
+                            {project.highlight}
+                        </span>
+                    )}
+                </div>
+                
+                <!-- Links -->
+                <div class="flex gap-4">
+                    {project.link && (
+                        <a 
+                            href={project.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg flex items-center gap-2 transition-colors text-sm"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                <polyline points="15 3 21 3 21 9"/>
+                                <line x1="10" y1="14" x2="21" y2="3"/>
+                            </svg>
+                            View Live
+                        </a>
+                    )}
+                    {project.github && (
+                        <a 
+                            href={project.github}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="px-5 py-2.5 bg-slate-800/80 hover:bg-slate-700 text-white font-bold rounded-lg flex items-center gap-2 transition-colors border border-slate-700 text-sm"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                            Source Code
+                        </a>
+                    )}
+                </div>
+            </div>
+        </section>
+        
+        <!-- Short Description + Tech Stack -->
+        <section class="py-12">
+            <div class="max-w-3xl mx-auto px-6">
+                {project.description && (
+                    <p class="text-lg md:text-xl text-slate-300 leading-relaxed text-center mb-8">
+                        {project.description}
+                    </p>
+                )}
+                
+                {/* Tech Stack Badges */}
+                {project.tech && project.tech.length > 0 && (
+                    <div class="flex flex-wrap justify-center gap-3">
+                        {project.tech.map((t: string) => (
+                            <span class="px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-full text-sm text-slate-300 font-mono hover:border-blue-500/50 transition-colors">
+                                {t}
+                            </span>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </section>
+        
+        <!-- Trailer Section (Optional) -->
+        {project.trailer_url && (
+            <section class="py-16">
+                <div class="max-w-5xl mx-auto px-6">
+                    <h2 class="text-xl md:text-2xl font-display font-bold text-white text-center mb-8">
+                        TRAILER
+                    </h2>
+                    <div class="aspect-video rounded-xl overflow-hidden border border-slate-800 shadow-2xl shadow-blue-900/20">
+                        {isYouTube ? (
+                            <iframe
+                                src={getYouTubeEmbedUrl(project.trailer_url)}
+                                title={`${project.title} Trailer`}
+                                class="w-full h-full"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen
+                            ></iframe>
+                        ) : (
+                            <video 
+                                src={project.trailer_url} 
+                                controls 
+                                class="w-full h-full object-cover"
+                            ></video>
+                        )}
+                    </div>
+                </div>
+            </section>
+        )}
+        
+        <!-- Documentation Gallery - Infinite Seamless Carousel -->
+        {galleryImages.length >= 3 && (
+            <section class="py-16">
+                <div class="max-w-6xl mx-auto px-6">
+                    <h2 class="text-xl md:text-2xl font-display font-bold text-white text-center mb-8">
+                        DOCUMENTATION
+                    </h2>
+                    
+                    <!-- Carousel Container -->
+                    <div class="relative" id="gallery-carousel">
+                        <!-- Images Track with Arrows positioned relative to this -->
+                        <div class="relative">
+                            <!-- Navigation Arrow Left -->
+                            <button 
+                                id="gallery-prev"
+                                class="absolute -left-4 md:-left-6 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-slate-900/90 hover:bg-slate-800 rounded-full flex items-center justify-center text-white transition-all border border-slate-700 shadow-lg hover:scale-110"
+                                aria-label="Previous image"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="15 18 9 12 15 6"/>
+                                </svg>
+                            </button>
+                            
+                            <!-- Images Container -->
+                            <div class="overflow-hidden rounded-xl">
+                                <div id="gallery-track" class="flex gap-4">
+                                    {extendedGalleryImages.map((img: string, index: number) => (
+                                        <div 
+                                            class="gallery-slide flex-shrink-0 w-[calc(33.333%-11px)] cursor-pointer group"
+                                            data-index={index}
+                                            data-real-index={(index - 3 + galleryImages.length) % galleryImages.length}
+                                        >
+                                            <div class="aspect-video rounded-lg overflow-hidden border border-slate-800 group-hover:border-blue-500/50 transition-all duration-300 shadow-lg group-hover:shadow-blue-900/20">
+                                                <img 
+                                                    src={img} 
+                                                    alt={`${project.title} Screenshot ${((index - 3 + galleryImages.length) % galleryImages.length) + 1}`}
+                                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            
+                            <!-- Navigation Arrow Right -->
+                            <button 
+                                id="gallery-next"
+                                class="absolute -right-4 md:-right-6 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-slate-900/90 hover:bg-slate-800 rounded-full flex items-center justify-center text-white transition-all border border-slate-700 shadow-lg hover:scale-110"
+                                aria-label="Next image"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <!-- Dots Indicator -->
+                        <div class="flex justify-center gap-2 mt-6" id="gallery-dots">
+                            {galleryImages.map((_: string, i: number) => (
+                                <button 
+                                    class={`w-2 h-2 rounded-full transition-all ${i === 0 ? 'bg-blue-500' : 'bg-slate-600 hover:bg-slate-500'}`}
+                                    data-index={i}
+                                    aria-label={`Go to image ${i + 1}`}
+                                ></button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </section>
+        )}
+        
+        <!-- Lightbox Modal -->
+        <div id="lightbox" class="fixed inset-0 z-50 hidden bg-black/95 backdrop-blur-sm">
+            <!-- Close Button -->
+            <button id="lightbox-close" class="absolute top-6 right-6 text-white hover:text-blue-400 transition-colors z-20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+            
+            <!-- Lightbox Image Container -->
+            <div class="absolute inset-0 flex items-center justify-center p-20 z-10" id="lightbox-image-container">
+                <img id="lightbox-image" src="" alt="" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl cursor-zoom-out" />
+            </div>
+            
+            <!-- Lightbox Navigation - higher z-index -->
+            <button id="lightbox-prev" class="absolute left-6 top-1/2 -translate-y-1/2 w-14 h-14 bg-slate-800/80 hover:bg-slate-700 rounded-full flex items-center justify-center text-white transition-colors z-20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+            </button>
+            <button id="lightbox-next" class="absolute right-6 top-1/2 -translate-y-1/2 w-14 h-14 bg-slate-800/80 hover:bg-slate-700 rounded-full flex items-center justify-center text-white transition-colors z-20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
+            </button>
+            
+            <!-- Counter -->
+            <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-white font-mono text-sm z-20">
+                <span id="lightbox-counter">1 / 1</span>
+            </div>
+        </div>
+        
+        <!-- Full Description -->
+        {(project.full_content || project.challenge_solution) && (
+            <section class="py-16">
+                <div class="max-w-4xl mx-auto px-6">
+                    
+                    {/* Section with Accent Line */}
+                    <div class="relative">
+                        {/* Accent Line */}
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 via-blue-400 to-transparent rounded-full"></div>
+                        
+                        <div class="pl-8">
+                            {/* Heading */}
+                            <h2 class="text-blue-500 font-mono text-sm tracking-widest mb-6">
+                                // ABOUT_PROJECT
+                            </h2>
+                            
+                            {/* Full Content */}
+                            {project.full_content && (
+                                <div class="space-y-4">
+                                    <div class="text-slate-300 text-base md:text-lg leading-relaxed whitespace-pre-wrap">
+                                        {project.full_content}
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {/* Challenge & Solution */}
+                            {project.challenge_solution && (
+                                <div class="mt-8 pt-8 border-t border-slate-800/50">
+                                    <h3 class="text-white font-semibold mb-3 flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400">
+                                            <path d="M12 2v4"/>
+                                            <path d="m6.8 15-3.5 2"/>
+                                            <path d="m20.7 7-3.5 2"/>
+                                            <path d="M6.8 9 3.3 7"/>
+                                            <path d="m20.7 17-3.5-2"/>
+                                            <circle cx="12" cy="12" r="4"/>
+                                        </svg>
+                                        Challenge & Solution
+                                    </h3>
+                                    <p class="text-slate-400 leading-relaxed">
+                                        {project.challenge_solution}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </section>
+        )}
+        
+        <!-- More Projects -->
+        {allProjects.length > 0 && (
+            <section class="py-16">
+                <div class="max-w-6xl mx-auto px-6">
+                    <h2 class="text-xl md:text-2xl font-display font-bold text-white text-center mb-10">
+                        MORE PROJECTS
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {allProjects.map((p: any) => (
+                            <a href={`/projects/${p.slug}`} class="group block">
+                                <div class="aspect-video bg-slate-800 rounded-xl overflow-hidden mb-4 border border-slate-800 group-hover:border-blue-500/50 transition-all duration-300 shadow-lg group-hover:shadow-blue-900/20">
+                                    {p.image_path || p.hero_image ? (
+                                        <img src={p.image_path || p.hero_image} alt={p.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                    ) : (
+                                        <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+                                            <span class="text-slate-600 text-3xl font-bold uppercase">{p.title.charAt(0)}</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <h3 class="text-lg font-bold text-white group-hover:text-blue-400 transition-colors mb-2">{p.title}</h3>
+                                <p class="text-sm text-slate-400 line-clamp-2">{p.description}</p>
+                            </a>
+                        ))}
+                    </div>
+                </div>
+            </section>
+        )}
+        
+        <!-- Footer -->
+        <Footer />
+    </main>
+</Layout>
+
+<script define:vars={{ galleryImages }}>
+    // Infinite Seamless Carousel
+    const track = document.getElementById('gallery-track');
+    const slides = document.querySelectorAll('.gallery-slide');
+    const dots = document.querySelectorAll('#gallery-dots button');
+    const prevBtn = document.getElementById('gallery-prev');
+    const nextBtn = document.getElementById('gallery-next');
+    
+    const totalRealSlides = galleryImages.length;
+    const cloneCount = 3; // We cloned 3 at start and 3 at end
+    
+    // Current position in the extended array (starts at clone offset to show first real image)
+    let currentIndex = cloneCount; // Start at first real slide (index 3 in extended array)
+    
+    // Auto-slide timer
+    let autoSlideTimer;
+    const AUTO_SLIDE_INTERVAL = 5000;
+    let isTransitioning = false;
+    
+    function getSlideWidth() {
+        if (slides.length === 0) return 0;
+        const slide = slides[0];
+        const gap = 16;
+        return slide.offsetWidth + gap;
+    }
+    
+    function setTransition(enabled) {
+        track.style.transition = enabled ? 'transform 500ms ease-out' : 'none';
+    }
+    
+    function updatePosition(animate = true) {
+        setTransition(animate);
+        const slideWidth = getSlideWidth();
+        track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
+    }
+    
+    function updateDots() {
+        // Calculate which real slide is currently showing (leftmost visible)
+        const realIndex = ((currentIndex - cloneCount) % totalRealSlides + totalRealSlides) % totalRealSlides;
+        
+        dots.forEach((dot, i) => {
+            // Highlight dots for visible slides (current + next 2)
+            const isVisible = 
+                i === realIndex || 
+                i === (realIndex + 1) % totalRealSlides || 
+                i === (realIndex + 2) % totalRealSlides;
+            
+            if (isVisible) {
+                dot.classList.add('bg-blue-500');
+                dot.classList.remove('bg-slate-600');
+            } else {
+                dot.classList.remove('bg-blue-500');
+                dot.classList.add('bg-slate-600');
+            }
+        });
+    }
+    
+    function handleInfiniteLoop() {
+        // After transition ends, check if we need to jump
+        const maxRealIndex = cloneCount + totalRealSlides - 1; // Last real slide
+        const minRealIndex = cloneCount; // First real slide
+        
+        if (currentIndex > maxRealIndex) {
+            // We've scrolled past the end clones, jump to beginning
+            currentIndex = currentIndex - totalRealSlides;
+            updatePosition(false); // No animation for the jump
+        } else if (currentIndex < minRealIndex) {
+            // We've scrolled before the start clones, jump to end
+            currentIndex = currentIndex + totalRealSlides;
+            updatePosition(false);
+        }
+    }
+    
+    function goToNext() {
+        if (isTransitioning) return;
+        isTransitioning = true;
+        currentIndex++;
+        updatePosition(true);
+        updateDots();
+    }
+    
+    function goToPrev() {
+        if (isTransitioning) return;
+        isTransitioning = true;
+        currentIndex--;
+        updatePosition(true);
+        updateDots();
+    }
+    
+    // Handle transition end for infinite loop
+    track?.addEventListener('transitionend', () => {
+        isTransitioning = false;
+        handleInfiniteLoop();
+    });
+    
+    function resetAutoSlide() {
+        clearInterval(autoSlideTimer);
+        autoSlideTimer = setInterval(goToNext, AUTO_SLIDE_INTERVAL);
+    }
+    
+    function startAutoSlide() {
+        autoSlideTimer = setInterval(goToNext, AUTO_SLIDE_INTERVAL);
+    }
+    
+    // Arrow navigation
+    prevBtn?.addEventListener('click', () => {
+        goToPrev();
+        resetAutoSlide();
+    });
+    
+    nextBtn?.addEventListener('click', () => {
+        goToNext();
+        resetAutoSlide();
+    });
+    
+    // Dot navigation
+    dots.forEach((dot, i) => {
+        dot.addEventListener('click', () => {
+            if (isTransitioning) return;
+            isTransitioning = true;
+            currentIndex = cloneCount + i;
+            updatePosition(true);
+            updateDots();
+            resetAutoSlide();
+        });
+    });
+    
+    // Initialize - set starting position without animation
+    updatePosition(false);
+    updateDots();
+    startAutoSlide();
+    
+    // Pause auto-slide when hovering
+    const carouselContainer = document.getElementById('gallery-carousel');
+    carouselContainer?.addEventListener('mouseenter', () => {
+        clearInterval(autoSlideTimer);
+    });
+    carouselContainer?.addEventListener('mouseleave', () => {
+        startAutoSlide();
+    });
+    
+    // Lightbox functionality
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImage = document.getElementById('lightbox-image');
+    const lightboxCounter = document.getElementById('lightbox-counter');
+    const lightboxClose = document.getElementById('lightbox-close');
+    const lightboxPrev = document.getElementById('lightbox-prev');
+    const lightboxNext = document.getElementById('lightbox-next');
+    
+    let lightboxIndex = 0;
+    
+    function openLightbox(realIndex) {
+        lightboxIndex = realIndex;
+        lightboxImage.src = galleryImages[lightboxIndex];
+        lightboxCounter.textContent = `${lightboxIndex + 1} / ${totalRealSlides}`;
+        lightbox.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        clearInterval(autoSlideTimer);
+    }
+    
+    function closeLightbox() {
+        lightbox.classList.add('hidden');
+        document.body.style.overflow = '';
+        startAutoSlide();
+    }
+    
+    function lightboxPrevImage() {
+        lightboxIndex = (lightboxIndex - 1 + totalRealSlides) % totalRealSlides;
+        lightboxImage.src = galleryImages[lightboxIndex];
+        lightboxCounter.textContent = `${lightboxIndex + 1} / ${totalRealSlides}`;
+    }
+    
+    function lightboxNextImage() {
+        lightboxIndex = (lightboxIndex + 1) % totalRealSlides;
+        lightboxImage.src = galleryImages[lightboxIndex];
+        lightboxCounter.textContent = `${lightboxIndex + 1} / ${totalRealSlides}`;
+    }
+    
+    // Click on slide to open lightbox
+    slides.forEach((slide) => {
+        slide.addEventListener('click', () => {
+            const realIndex = parseInt(slide.getAttribute('data-real-index'));
+            openLightbox(realIndex >= 0 ? realIndex : 0);
+        });
+    });
+    
+    // Lightbox controls
+    lightboxClose?.addEventListener('click', closeLightbox);
+    lightboxPrev?.addEventListener('click', lightboxPrevImage);
+    lightboxNext?.addEventListener('click', lightboxNextImage);
+    
+    lightbox?.addEventListener('click', (e) => {
+        if (e.target === lightbox) closeLightbox();
+    });
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (!lightbox.classList.contains('hidden')) {
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') lightboxPrevImage();
+            if (e.key === 'ArrowRight') lightboxNextImage();
+        } else if (document.getElementById('gallery-carousel')) {
+            if (e.key === 'ArrowLeft') {
+                goToPrev();
+                resetAutoSlide();
+            }
+            if (e.key === 'ArrowRight') {
+                goToNext();
+                resetAutoSlide();
+            }
+        }
+    });
+    
+    // Handle resize
+    window.addEventListener('resize', () => {
+        updatePosition(false);
+    });
+</script>

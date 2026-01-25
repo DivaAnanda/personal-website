@@ -1,15 +1,25 @@
 ---
-import content from '../data/content.json';
+import { getSiteData } from '../lib/data';
 
-const skills = content.skills;
-// Double the skills array for seamless marquee
-const doubledSkills = [...skills, ...skills];
+const data = getSiteData();
+const skills = data.skills;
 ---
-
-<div class="w-full overflow-hidden bg-slate-900/50 py-10 border-y border-slate-800 backdrop-blur-sm">
-  <div class="flex w-[200%]">
-    <div class="flex gap-16 min-w-full animate-marquee">
-      {doubledSkills.map((skill, index) => (
+<div class="w-full overflow-hidden bg-slate-900/50 py-10 border-y border-slate-800 backdrop-blur-sm group">
+  <div class="flex">
+    <!-- Track 1 -->
+    <div class="flex min-w-full shrink-0 items-center gap-16 pr-16 animate-marquee">
+      {skills.map((skill) => (
+        <span 
+          class="text-slate-400 text-2xl md:text-4xl font-display font-bold uppercase whitespace-nowrap opacity-50 hover:opacity-100 hover:text-blue-400 transition-colors cursor-default"
+        >
+          {skill}
+        </span>
+      ))}
+    </div>
+    
+    <!-- Track 2 (Duplicate for seamless loop) -->
+    <div class="flex min-w-full shrink-0 items-center gap-16 pr-16 animate-marquee" aria-hidden="true">
+      {skills.map((skill) => (
         <span 
           class="text-slate-400 text-2xl md:text-4xl font-display font-bold uppercase whitespace-nowrap opacity-50 hover:opacity-100 hover:text-blue-400 transition-colors cursor-default"
         >

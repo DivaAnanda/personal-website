@@ -1,0 +1,210 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { validateRequest } from '../../lib/auth';
+import { getPersonalInfo, updatePersonalInfo } from '../../lib/db';
+
+// Auth check
+const { isAuthenticated } = validateRequest(Astro.request);
+if (!isAuthenticated) {
+    return Astro.redirect('/admin/login');
+}
+
+let message = '';
+let messageType = '';
+
+// Handle POST request
+if (Astro.request.method === 'POST') {
+    try {
+        const formData = await Astro.request.formData();
+        const data = {
+            name: formData.get('name') as string,
+            nickname: formData.get('nickname') as string,
+            role: formData.get('role') as string,
+            tagline: formData.get('tagline') as string,
+            about: formData.get('about') as string,
+            location: formData.get('location') as string,
+            email: formData.get('email') as string,
+            phone: formData.get('phone') as string,
+            github: formData.get('github') as string,
+            linkedin: formData.get('linkedin') as string,
+        };
+        
+        updatePersonalInfo(data);
+        message = 'Personal info updated successfully!';
+        messageType = 'success';
+    } catch (error) {
+        message = 'Failed to update personal info';
+        messageType = 'error';
+    }
+}
+
+// Get current data
+const info = getPersonalInfo() || {};
+---
+
+<AdminLayout title="Personal Info">
+    <div class="page-header">
+        <h1 class="page-title">Personal Info</h1>
+        <p class="page-description">Edit your personal information displayed on the website.</p>
+    </div>
+    
+    {message && (
+        <div class={`alert ${messageType === 'success' ? 'alert-success' : 'alert-error'}`}>
+            {message}
+        </div>
+    )}
+    
+    <form method="POST" class="card max-w-3xl">
+        <div class="space-y-6">
+            <!-- Name & Nickname -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="name" class="form-label">Full Name *</label>
+                    <input 
+                        type="text" 
+                        id="name" 
+                        name="name" 
+                        required 
+                        class="form-input"
+                        value={info.name || ''}
+                        placeholder="I Gede Surya Diva Ananda"
+                    />
+                </div>
+                <div>
+                    <label for="nickname" class="form-label">Nickname</label>
+                    <input 
+                        type="text" 
+                        id="nickname" 
+                        name="nickname" 
+                        class="form-input"
+                        value={info.nickname || ''}
+                        placeholder="Diva"
+                    />
+                </div>
+            </div>
+            
+            <!-- Role -->
+            <div>
+                <label for="role" class="form-label">Role / Title *</label>
+                <input 
+                    type="text" 
+                    id="role" 
+                    name="role" 
+                    required 
+                    class="form-input"
+                    value={info.role || ''}
+                    placeholder="Technology Enthusiast"
+                />
+                <p class="text-xs text-slate-500 mt-1">This appears as the main heading on your website</p>
+            </div>
+            
+            <!-- Tagline -->
+            <div>
+                <label for="tagline" class="form-label">Tagline</label>
+                <input 
+                    type="text" 
+                    id="tagline" 
+                    name="tagline" 
+                    class="form-input"
+                    value={info.tagline || ''}
+                    placeholder="Bridging creativity and code..."
+                />
+                <p class="text-xs text-slate-500 mt-1">A short description that appears below your name</p>
+            </div>
+            
+            <!-- About -->
+            <div>
+                <label for="about" class="form-label">About</label>
+                <textarea 
+                    id="about" 
+                    name="about" 
+                    class="form-textarea"
+                    rows="5"
+                    placeholder="Tell visitors about yourself..."
+                >{info.about || ''}</textarea>
+            </div>
+            
+            <!-- Contact Info -->
+            <div class="border-t border-slate-800 pt-6">
+                <h3 class="text-lg font-semibold text-white mb-4">Contact Information</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="email" class="form-label">Email</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            class="form-input"
+                            value={info.email || ''}
+                            placeholder="your@email.com"
+                        />
+                    </div>
+                    <div>
+                        <label for="phone" class="form-label">Phone</label>
+                        <input 
+                            type="text" 
+                            id="phone" 
+                            name="phone" 
+                            class="form-input"
+                            value={info.phone || ''}
+                            placeholder="+62..."
+                        />
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <label for="location" class="form-label">Location</label>
+                    <input 
+                        type="text" 
+                        id="location" 
+                        name="location" 
+                        class="form-input"
+                        value={info.location || ''}
+                        placeholder="Badung, Bali, Indonesia"
+                    />
+                </div>
+            </div>
+            
+            <!-- Social Links -->
+            <div class="border-t border-slate-800 pt-6">
+                <h3 class="text-lg font-semibold text-white mb-4">Social Links</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="github" class="form-label">GitHub URL</label>
+                        <input 
+                            type="url" 
+                            id="github" 
+                            name="github" 
+                            class="form-input"
+                            value={info.github || ''}
+                            placeholder="https://github.com/username"
+                        />
+                    </div>
+                    <div>
+                        <label for="linkedin" class="form-label">LinkedIn URL</label>
+                        <input 
+                            type="url" 
+                            id="linkedin" 
+                            name="linkedin" 
+                            class="form-input"
+                            value={info.linkedin || ''}
+                            placeholder="https://linkedin.com/in/username"
+                        />
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Submit -->
+            <div class="flex gap-4 pt-4">
+                <button type="submit" class="btn btn-primary">
+                    Save Changes
+                </button>
+                <a href="/admin" class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
+        </div>
+    </form>
+</AdminLayout>
