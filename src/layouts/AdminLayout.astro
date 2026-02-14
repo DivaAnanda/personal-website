@@ -1,5 +1,6 @@
 ---
 import '../styles/admin.css';
+import SpeedInsights from '@vercel/speed-insights/astro';
 
 interface Props {
     title?: string;
@@ -131,5 +132,6 @@ const { title = 'Admin Dashboard' } = Astro.props;
             <slot />
         </main>
     </div>
+    <SpeedInsights />
 </body>
 </html>
