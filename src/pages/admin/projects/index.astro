@@ -20,7 +20,7 @@ if (Astro.request.method === 'POST') {
         
         if (action === 'delete') {
             const id = parseInt(formData.get('id') as string);
-            deleteProject(id);
+            await deleteProject(id);
             message = 'Project deleted successfully!';
             messageType = 'success';
         }
