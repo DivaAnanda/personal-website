@@ -47,24 +47,20 @@ if (Astro.request.method === 'POST') {
         const formData = await Astro.request.formData();
         
         // Handle image uploads (keep existing if no new upload)
-        const thumbnailFile = formData.get('thumbnail') as File;
-        const heroFile = formData.get('hero_image') as File;
-        
-        const thumbnailPath = await handleImageUpload(thumbnailFile) || project.image_path;
-        const heroPath = await handleImageUpload(heroFile, 'projects/heroes') || project.hero_image;
+        const thumbnailPath = (formData.get('thumbnail_base64') as string) || project.image_path;
+        const heroPath = (formData.get('hero_image_base64') as string) || project.hero_image;
         
         // Handle gallery images - merge existing with new uploads
         let galleryImages: string[] = project.gallery_images || [];
         
         for (let i = 1; i <= 6; i++) {
-            const galleryFile = formData.get(`gallery_${i}`) as File;
-            const galleryPath = await handleImageUpload(galleryFile, 'projects/gallery');
-            if (galleryPath) {
+            const galleryBase64 = formData.get(`gallery_${i}_base64`) as string;
+            if (galleryBase64) {
                 // Replace at position if exists, otherwise add
                 if (galleryImages[i - 1]) {
-                    galleryImages[i - 1] = galleryPath;
+                    galleryImages[i - 1] = galleryBase64;
                 } else {
-                    galleryImages.push(galleryPath);
+                    galleryImages.push(galleryBase64);
                 }
             }
         }
@@ -193,7 +189,8 @@ const galleryImages = project.gallery_images || [];
                             </div>
                         )}
                         <div class="file-upload" onclick="document.getElementById('thumbnail').click()">
-                            <input type="file" id="thumbnail" name="thumbnail" accept="image/*" class="hidden" onchange="previewImage(this, 'thumbnail-preview')" />
+                            <input type="file" id="thumbnail" accept="image/*" class="hidden" onchange="handleFileSelect(this, 'thumbnail-preview', 'thumbnail-base64')" />
+                            <input type="hidden" name="thumbnail_base64" id="thumbnail-base64" />
                             <div id="thumbnail-preview-placeholder">
                                 <p class="text-slate-400 text-sm">{project.image_path ? 'Click to replace' : 'Click to upload'}</p>
                             </div>
@@ -211,7 +208,8 @@ const galleryImages = project.gallery_images || [];
                             </div>
                         )}
                         <div class="file-upload" onclick="document.getElementById('hero_image').click()">
-                            <input type="file" id="hero_image" name="hero_image" accept="image/*" class="hidden" onchange="previewImage(this, 'hero-preview')" />
+                            <input type="file" id="hero_image" accept="image/*" class="hidden" onchange="handleFileSelect(this, 'hero-preview', 'hero-base64')" />
+                            <input type="hidden" name="hero_image_base64" id="hero-base64" />
                             <div id="hero-preview-placeholder">
                                 <p class="text-slate-400 text-sm">{project.hero_image ? 'Click to replace' : 'Click to upload'}</p>
                             </div>
@@ -247,7 +245,8 @@ const galleryImages = project.gallery_images || [];
                     <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
                         {[1, 2, 3, 4, 5, 6].map((i) => (
                             <div class="file-upload aspect-square p-2" onclick={`document.getElementById('gallery_${i}').click()`}>
-                                <input type="file" id={`gallery_${i}`} name={`gallery_${i}`} accept="image/*" class="hidden" onchange={`previewImage(this, 'gallery-preview-${i}')`} />
+                                <input type="file" id={`gallery_${i}`} accept="image/*" class="hidden" onchange={`handleFileSelect(this, 'gallery-preview-${i}', 'gallery-${i}-base64')`} />
+                                <input type="hidden" name={`gallery_${i}_base64`} id={`gallery-${i}-base64`} />
                                 <div id={`gallery-placeholder-${i}`} class="flex flex-col items-center justify-center h-full">
                                     <span class="text-slate-500 text-xl">+</span>
                                 </div>
@@ -335,20 +334,79 @@ const galleryImages = project.gallery_images || [];
 </AdminLayout>
 
 <script>
-    function previewImage(input, previewId) {
-        const preview = document.getElementById(previewId);
+    function compressImage(file: File, maxWidth: number, maxHeight: number, quality: number): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event: any) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width = Math.round((width * maxHeight) / height);
+                            height = maxHeight;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx?.drawImage(img, 0, 0, width, height);
+                    
+                    const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                    resolve(dataUrl);
+                };
+                img.onerror = (err) => reject(err);
+            };
+            reader.onerror = (err) => reject(err);
+        });
+    }
+
+    async function handleFileSelect(input: HTMLInputElement, previewId: string, hiddenInputId: string) {
+        const preview = document.getElementById(previewId) as HTMLImageElement;
+        const hiddenInput = document.getElementById(hiddenInputId) as HTMLInputElement;
         const placeholder = document.getElementById(previewId + '-placeholder') || document.getElementById(previewId.replace('preview', 'placeholder'));
         
         if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                preview.src = e.target.result;
-                preview.classList.remove('hidden');
-                if (placeholder) placeholder.classList.add('hidden');
-            };
-            reader.readAsDataURL(input.files[0]);
+            const file = input.files[0];
+            try {
+                // Compress image
+                const base64 = await compressImage(file, 1200, 1200, 0.7);
+                if (preview) {
+                    preview.src = base64;
+                    preview.classList.remove('hidden');
+                }
+                if (placeholder) {
+                    placeholder.classList.add('hidden');
+                }
+                if (hiddenInput) {
+                    hiddenInput.value = base64;
+                }
+            } catch (err) {
+                console.error('Compression error, falling back to raw:', err);
+                const reader = new FileReader();
+                reader.onload = (e: any) => {
+                    if (preview) {
+                        preview.src = e.target.result;
+                        preview.classList.remove('hidden');
+                    }
+                    if (placeholder) placeholder.classList.add('hidden');
+                    if (hiddenInput) hiddenInput.value = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
         }
     }
     
-    window.previewImage = previewImage;
+    (window as any).handleFileSelect = handleFileSelect;
 </script>
