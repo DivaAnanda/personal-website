@@ -6,6 +6,11 @@ export const POST: APIRoute = async ({ request }) => {
     try {
         const body = await request.json();
         const token = import.meta.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN;
+        console.log('--- Blob Token Debug ---');
+        console.log('Token Length:', token ? token.length : 0);
+        console.log('Token Type:', typeof token);
+        console.log('Token Starts With:', token ? token.substring(0, 8) : 'undefined');
+        console.log('------------------------');
         
         const jsonResponse = await handleUpload({
             body,
