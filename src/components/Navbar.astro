@@ -1,14 +1,20 @@
 ---
-import content from '../data/content.json';
+import { getSiteData } from '../lib/data';
 
+const data = await getSiteData();
 const navLinks = ["Home", "About", "Projects", "Experience", "Contact"];
+
+const nickname = data.personal.nickname || "Diva";
+const nameParts = data.personal.name.split(' ');
+const firstName = nickname.toUpperCase();
+const lastName = (nameParts.length > 1 ? nameParts[nameParts.length - 1] : "Ananda").toUpperCase();
 ---
 
 <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-transparent py-6">
   <div class="w-full px-6 md:px-12 lg:px-16 flex justify-between items-center">
     <!-- Logo -->
     <a href="/#home" class="font-display font-bold text-xl tracking-tighter text-white hover:text-blue-400 transition-colors">
-      DIVA<span class="text-blue-500">.ANANDA</span>
+      {firstName}<span class="text-blue-500">.{lastName}</span>
     </a>
 
     <!-- Desktop Navigation -->

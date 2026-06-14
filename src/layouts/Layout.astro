@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import content from '../data/content.json';
+import { getSiteData } from '../lib/data';
 import SpeedInsights from '@vercel/speed-insights/astro';
 
 interface Props {
@@ -8,10 +8,14 @@ interface Props {
   description?: string;
 }
 
-const { 
-  title = content.seo.title, 
-  description = content.seo.description 
-} = Astro.props;
+const { title, description } = Astro.props;
+const data = await getSiteData();
+
+const siteTitle = title || data.seo.title;
+const siteDescription = description || data.seo.description;
+const authorName = data.personal.name;
+const siteUrl = data.seo.url;
+const siteImage = data.seo.image;
 ---
 
 <!doctype html>
@@ -20,29 +24,29 @@ const {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="canonical" href={content.seo.url} />
+    <link rel="canonical" href={siteUrl} />
     
     <!-- Primary Meta Tags -->
-    <title>{title}</title>
-    <meta name="title" content={title} />
-    <meta name="description" content={description} />
-    <meta name="author" content={content.personal.name} />
+    <title>{siteTitle}</title>
+    <meta name="title" content={siteTitle} />
+    <meta name="description" content={siteDescription} />
+    <meta name="author" content={authorName} />
     <meta name="keywords" content="game developer, web developer, technology enthusiast, portfolio, Bali, Indonesia" />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content={content.seo.url} />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:image" content={`${content.seo.url}${content.seo.image}`} />
+    <meta property="og:url" content={siteUrl} />
+    <meta property="og:title" content={siteTitle} />
+    <meta property="og:description" content={siteDescription} />
+    <meta property="og:image" content={`${siteUrl}${siteImage}`} />
     <meta property="og:locale" content="en_US" />
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content={content.seo.url} />
-    <meta property="twitter:title" content={title} />
-    <meta property="twitter:description" content={description} />
-    <meta property="twitter:image" content={`${content.seo.url}${content.seo.image}`} />
+    <meta property="twitter:url" content={siteUrl} />
+    <meta property="twitter:title" content={siteTitle} />
+    <meta property="twitter:description" content={siteDescription} />
+    <meta property="twitter:image" content={`${siteUrl}${siteImage}`} />
     
     <!-- Preconnect for fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

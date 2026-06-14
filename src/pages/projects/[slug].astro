@@ -3,6 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import Navbar from '../../components/Navbar.astro';
 import Footer from '../../components/Footer.astro';
 import { getProjectBySlug, getAllProjects } from '../../lib/db';
+import { getSiteData } from '../../lib/data';
 
 const { slug } = Astro.params;
 
@@ -11,6 +12,8 @@ const project = await getProjectBySlug(slug as string);
 if (!project) {
     return Astro.redirect('/');
 }
+
+const data = await getSiteData();
 
 // Get other projects for "More Projects" section
 const allProjects = (await getAllProjects()).filter((p: any) => p.id !== project.id).slice(0, 3);
@@ -39,7 +42,7 @@ const getYouTubeEmbedUrl = (url: string) => {
 };
 ---
 
-<Layout title={`${project.title} | I Gede Surya Diva Ananda`}>
+<Layout title={`${project.title} | ${data.personal.name}`}>
     <!-- Navbar Header -->
     <Navbar />
     

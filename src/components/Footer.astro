@@ -1,6 +1,7 @@
 ---
-import content from '../data/content.json';
+import { getSiteData } from '../lib/data';
 
+const data = await getSiteData();
 const currentYear = new Date().getFullYear();
 ---
 
@@ -9,7 +10,7 @@ const currentYear = new Date().getFullYear();
     <!-- Social Links -->
     <div class="flex justify-center gap-6 mb-4">
       <a 
-        href={content.socials.github}
+        href={data.socials.github}
         target="_blank"
         rel="noopener noreferrer"
         class="text-slate-500 hover:text-white cursor-pointer transition-colors"
@@ -21,7 +22,7 @@ const currentYear = new Date().getFullYear();
         </svg>
       </a>
       <a 
-        href={content.socials.linkedin}
+        href={data.socials.linkedin}
         target="_blank"
         rel="noopener noreferrer"
         class="text-slate-500 hover:text-white cursor-pointer transition-colors"
@@ -34,7 +35,7 @@ const currentYear = new Date().getFullYear();
         </svg>
       </a>
       <a 
-        href={content.socials.email}
+        href={data.socials.email}
         class="text-slate-500 hover:text-white cursor-pointer transition-colors"
         aria-label="Email"
       >
@@ -48,7 +49,7 @@ const currentYear = new Date().getFullYear();
     
     <!-- Copyright -->
     <p class="text-slate-600 text-sm font-mono">
-      © {currentYear} {content.personal.name.toUpperCase()}. Built with Astro.
+      © {currentYear} {data.personal.name.toUpperCase()}. Built with Astro.
     </p>
   </div>
 </footer>
