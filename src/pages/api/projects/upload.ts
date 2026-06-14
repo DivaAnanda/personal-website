@@ -24,7 +24,7 @@ export const POST: APIRoute = async ({ request }) => {
                 }
                 
                 return {
-                    allowedContentTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+                    allowedContentTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'],
                     tokenPayload: JSON.stringify({
                         // optional client payload
                     }),
