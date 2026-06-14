@@ -5,9 +5,12 @@ import { validateRequest } from '../../../lib/auth';
 export const POST: APIRoute = async ({ request }) => {
     try {
         const body = await request.json();
+        const token = import.meta.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN;
+        
         const jsonResponse = await handleUpload({
             body,
             request,
+            token,
             onBeforeGenerateToken: async (pathname, clientPayload) => {
                 // Check authorization
                 const { isAuthenticated } = await validateRequest(request);
