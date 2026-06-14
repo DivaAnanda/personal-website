@@ -12,7 +12,7 @@ if (!isAuthenticated) {
 let message = '';
 let messageType = '';
 
-// Handle POST request
+// Handle POST request (deletion only now)
 if (Astro.request.method === 'POST') {
     try {
         const formData = await Astro.request.formData();
@@ -30,7 +30,7 @@ if (Astro.request.method === 'POST') {
     }
 }
 
-// Get current data
+// Get current data sorted by sort_order
 const projects = await getAllProjects();
 ---
 
@@ -38,16 +38,29 @@ const projects = await getAllProjects();
     <div class="page-header flex justify-between items-start">
         <div>
             <h1 class="page-title">Projects</h1>
-            <p class="page-description">Manage your portfolio projects.</p>
+            <p class="page-description">Manage your portfolio projects. Drag to reorder, check to feature.</p>
         </div>
-        <a href="/admin/projects/new" class="btn btn-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"/>
-                <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            Add Project
-        </a>
+        <div class="flex gap-3">
+            <button id="save-changes-btn" class="btn btn-success hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                Save Changes
+            </button>
+            <a href="/admin/projects/new" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Add Project
+            </a>
+        </div>
     </div>
+    
+    <!-- Client Alert Message -->
+    <div id="client-alert" class="alert hidden"></div>
     
     {message && (
         <div class={`alert ${messageType === 'success' ? 'alert-success' : 'alert-error'}`}>
@@ -55,87 +68,233 @@ const projects = await getAllProjects();
         </div>
     )}
     
-    <!-- Projects Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Projects List (Draggable) -->
+    <div id="project-list" class="space-y-3">
         {projects.length === 0 ? (
-            <div class="col-span-full card text-center py-12">
+            <div class="card text-center py-12 border-dashed border-slate-700">
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-slate-600 mb-4">
                     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
                 </svg>
-                <p class="text-slate-400 mb-4">No projects yet.</p>
-                <a href="/admin/projects/new" class="btn btn-primary">
+                <p class="text-slate-400 mb-4 font-mono text-sm">No projects yet.</p>
+                <a href="/admin/projects/new" class="btn btn-primary mx-auto">
                     Add Your First Project
                 </a>
             </div>
         ) : (
             projects.map((project: any) => (
-                <div class="card group overflow-hidden">
-                    <!-- Project Image -->
-                    <div class="aspect-video bg-slate-800 rounded-lg mb-4 overflow-hidden relative">
-                        {project.image_path ? (
-                            <img 
-                                src={project.image_path} 
-                                alt={project.title}
-                                class="w-full h-full object-cover"
-                            />
-                        ) : (
-                            <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
-                                <span class="text-slate-600 text-2xl font-bold uppercase">{project.title.charAt(0)}</span>
-                            </div>
-                        )}
-                        {project.featured && (
-                            <span class="absolute top-2 right-2 px-2 py-1 bg-blue-600 text-white text-xs font-bold rounded">
-                                Featured
-                            </span>
-                        )}
-                    </div>
-                    
-                    <!-- Project Info -->
-                    <h3 class="text-lg font-bold text-white mb-2">{project.title}</h3>
-                    <p class="text-slate-400 text-sm line-clamp-2 mb-3">{project.description}</p>
-                    
-                    <!-- Tech Tags -->
-                    {project.tech && project.tech.length > 0 && (
-                        <div class="flex flex-wrap gap-1 mb-4">
-                            {project.tech.slice(0, 3).map((t: string) => (
-                                <span class="text-xs font-mono text-blue-300">#{t}</span>
-                            ))}
-                            {project.tech.length > 3 && (
-                                <span class="text-xs text-slate-500">+{project.tech.length - 3}</span>
+                <div class="project-sort-item flex flex-col md:flex-row md:items-center justify-between p-4 bg-slate-900 border border-slate-800 rounded-xl hover:border-slate-700/50 transition-colors" data-id={project.id}>
+                    <div class="flex items-center gap-4">
+                        <!-- Drag Handle -->
+                        <div class="drag-handle text-slate-600 hover:text-slate-400 cursor-grab active:cursor-grabbing p-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="9" cy="5" r="1"/>
+                                <circle cx="9" cy="12" r="1"/>
+                                <circle cx="9" cy="19" r="1"/>
+                                <circle cx="15" cy="5" r="1"/>
+                                <circle cx="15" cy="12" r="1"/>
+                                <circle cx="15" cy="19" r="1"/>
+                            </svg>
+                        </div>
+                        <!-- Thumbnail -->
+                        <div class="w-16 h-10 rounded bg-slate-800 overflow-hidden relative border border-slate-850 shrink-0">
+                            {project.image_path ? (
+                                <img 
+                                    src={project.image_path} 
+                                    alt={project.title}
+                                    class="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-850 to-slate-900">
+                                    <span class="text-slate-600 text-sm font-bold uppercase">{project.title.charAt(0)}</span>
+                                </div>
                             )}
                         </div>
-                    )}
+                        <!-- Title & Info -->
+                        <div>
+                            <h3 class="font-bold text-white text-base leading-tight">{project.title}</h3>
+                            <p class="text-xs text-slate-500 font-mono mt-0.5">
+                                {project.project_role || 'No role'} {project.project_date ? `| ${project.project_date}` : ''}
+                            </p>
+                        </div>
+                    </div>
                     
-                    <!-- Actions -->
-                    <div class="flex gap-2 mt-auto pt-4 border-t border-slate-800">
-                        <a href={`/admin/projects/${project.id}`} class="btn btn-sm btn-secondary flex-1">
-                            Edit
-                        </a>
-                        <a href={`/projects/${project.slug}`} target="_blank" class="btn btn-sm btn-secondary">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                                <polyline points="15 3 21 3 21 9"/>
-                                <line x1="10" y1="14" x2="21" y2="3"/>
-                            </svg>
-                        </a>
-                        <form method="POST" style="display: inline;">
-                            <input type="hidden" name="action" value="delete" />
-                            <input type="hidden" name="id" value={project.id} />
-                            <button 
-                                type="submit" 
-                                class="btn btn-sm btn-danger"
-                                onclick="return confirm('Are you sure you want to delete this project?')"
-                            >
+                    <!-- Actions & Toggles -->
+                    <div class="flex items-center justify-between md:justify-end gap-6 mt-4 md:mt-0 pt-3 md:pt-0 border-t border-slate-800/50 md:border-t-0">
+                        <!-- Featured Checkbox -->
+                        <label class="flex items-center gap-2 cursor-pointer bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-850 hover:border-slate-800">
+                            <input 
+                                type="checkbox" 
+                                checked={project.featured === 1 || project.featured === true} 
+                                class="featured-checkbox w-4 h-4 rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-0 focus:ring-offset-0 cursor-pointer" 
+                            />
+                            <span class="text-xs text-slate-400 select-none">Featured</span>
+                        </label>
+                        
+                        <!-- Buttons -->
+                        <div class="flex items-center gap-2">
+                            <a href={`/admin/projects/${project.id}`} class="btn btn-sm btn-secondary">
+                                Edit
+                            </a>
+                            <a href={`/projects/${project.slug}`} target="_blank" class="btn btn-sm btn-secondary">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M3 6h18"/>
-                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
-                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                    <polyline points="15 3 21 3 21 9"/>
+                                    <line x1="10" y1="14" x2="21" y2="3"/>
                                 </svg>
-                            </button>
-                        </form>
+                            </a>
+                            <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this project?')">
+                                <input type="hidden" name="action" value="delete" />
+                                <input type="hidden" name="id" value={project.id} />
+                                <button 
+                                    type="submit" 
+                                    class="btn btn-sm btn-danger"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 6h18"/>
+                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             ))
         )}
     </div>
 </AdminLayout>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" is:inline></script>
+<script is:inline>
+    document.addEventListener('DOMContentLoaded', () => {
+        const listEl = document.getElementById('project-list');
+        const saveBtn = document.getElementById('save-changes-btn');
+        const alertDiv = document.getElementById('client-alert');
+        
+        if (!listEl || !saveBtn) return;
+        
+        let initialOrder = [];
+        let initialFeatured = {};
+        
+        // Helper to get current state
+        function getCurrentState() {
+            const items = [];
+            const rows = listEl.querySelectorAll('.project-sort-item');
+            rows.forEach((row, index) => {
+                const id = row.getAttribute('data-id');
+                const checkbox = row.querySelector('.featured-checkbox');
+                items.push({
+                    id: parseInt(id),
+                    sort_order: index,
+                    featured: checkbox.checked
+                });
+            });
+            return items;
+        }
+        
+        // Save initial state
+        function saveInitialState() {
+            const state = getCurrentState();
+            initialOrder = state.map(item => item.id);
+            initialFeatured = {};
+            state.forEach(item => {
+                initialFeatured[item.id] = item.featured;
+            });
+        }
+        
+        // Check if state changed
+        function checkChanges() {
+            const currentState = getCurrentState();
+            let changed = false;
+            
+            // Check order changes
+            const currentOrder = currentState.map(item => item.id);
+            if (JSON.stringify(currentOrder) !== JSON.stringify(initialOrder)) {
+                changed = true;
+            }
+            
+            // Check checkbox changes
+            currentState.forEach(item => {
+                if (initialFeatured[item.id] !== item.featured) {
+                    changed = true;
+                }
+            });
+            
+            if (changed) {
+                saveBtn.classList.remove('hidden');
+            } else {
+                saveBtn.classList.add('hidden');
+            }
+        }
+        
+        // Initialize SortableJS
+        if (typeof Sortable !== 'undefined') {
+            Sortable.create(listEl, {
+                handle: '.drag-handle',
+                animation: 150,
+                ghostClass: 'bg-slate-800/80',
+                onEnd: () => {
+                    checkChanges();
+                }
+            });
+        }
+        
+        // Listen to checkbox changes
+        listEl.addEventListener('change', (e) => {
+            if (e.target.classList.contains('featured-checkbox')) {
+                checkChanges();
+            }
+        });
+        
+        // Initial state load
+        saveInitialState();
+        
+        // Handle save click
+        saveBtn.addEventListener('click', async () => {
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+            
+            try {
+                const items = getCurrentState();
+                const response = await fetch('/api/projects/reorder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items })
+                });
+                
+                if (response.ok) {
+                    alertDiv.textContent = 'Changes saved successfully!';
+                    alertDiv.className = 'alert alert-success';
+                    alertDiv.classList.remove('hidden');
+                    
+                    // Reset initial state to current state
+                    saveInitialState();
+                    saveBtn.classList.add('hidden');
+                    
+                    setTimeout(() => {
+                        alertDiv.classList.add('hidden');
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    const data = await response.json();
+                    throw new Error(data.error || 'Failed to save');
+                }
+            } catch (err) {
+                console.error(err);
+                alertDiv.textContent = err.message || 'An error occurred';
+                alertDiv.className = 'alert alert-error';
+                alertDiv.classList.remove('hidden');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                        <polyline points="17 21 17 13 7 13 7 21"/>
+                        <polyline points="7 3 7 8 15 8"/>
+                    </svg>
+                    Save Changes
+                `;
+            }
+        });
+    });
+</script>

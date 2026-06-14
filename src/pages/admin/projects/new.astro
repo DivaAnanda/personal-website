@@ -1,7 +1,7 @@
 ---
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { validateRequest } from '../../../lib/auth';
-import { addProject } from '../../../lib/db';
+import { addProject, getAllProjects } from '../../../lib/db';
 import fs from 'fs';
 import path from 'path';
 
@@ -62,6 +62,7 @@ if (Astro.request.method === 'POST') {
             .replace(/\s+/g, '-')
             .replace(/-+/g, '-');
         
+        const existingProjects = await getAllProjects();
         const data = {
             title,
             slug,
@@ -80,8 +81,8 @@ if (Astro.request.method === 'POST') {
             github: formData.get('github') as string,
             custom_link: formData.get('custom_link') as string || null,
             custom_button_label: formData.get('custom_button_label') as string || null,
-            featured: formData.get('featured') === 'on',
-            sort_order: parseInt(formData.get('sort_order') as string) || 0,
+            featured: false,
+            sort_order: existingProjects.length,
         };
         
         await addProject(data);
@@ -248,16 +249,6 @@ if (Astro.request.method === 'POST') {
                     </div>
                 </div>
                 
-                <div class="flex items-center gap-6">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" name="featured" class="w-4 h-4 rounded border-slate-600 bg-slate-900 text-blue-600" />
-                        <span class="text-slate-300">Featured project</span>
-                    </label>
-                    <div class="flex items-center gap-2">
-                        <label for="sort_order" class="text-slate-300">Sort Order:</label>
-                        <input type="number" id="sort_order" name="sort_order" value="0" class="form-input w-20" />
-                    </div>
-                </div>
             </div>
         </div>
         
