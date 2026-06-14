@@ -100,6 +100,21 @@ const projects = data.projects;
                 Code
               </a>
             )}
+            {project.custom_link && (
+              <a 
+                href={project.custom_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded flex items-center gap-1.5 transition-colors border border-slate-700"
+                onclick="event.stopPropagation();"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+                  <path d="M6 2v19.5a.5.5 0 0 0 .5.5H8V2H6.5a.5.5 0 0 0-.5.5Z"/>
+                </svg>
+                {project.custom_button_label || 'Manual'}
+              </a>
+            )}
             <a 
               href={project.slug ? `/projects/${project.slug}` : '#'}
               class="px-3 py-1.5 bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-white text-xs font-bold rounded flex items-center gap-1.5 transition-colors border border-slate-700/50"

@@ -89,6 +89,8 @@ async function initSchema() {
                 challenge_solution TEXT,
                 link TEXT,
                 github TEXT,
+                custom_link TEXT,
+                custom_button_label TEXT,
                 featured INTEGER DEFAULT 0,
                 sort_order INTEGER DEFAULT 0,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -113,6 +115,15 @@ async function initSchema() {
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
         `);
+
+        // Run migrations for existing projects table
+        try {
+            await db.execute('ALTER TABLE projects ADD COLUMN custom_link TEXT');
+        } catch (e) {}
+        try {
+            await db.execute('ALTER TABLE projects ADD COLUMN custom_button_label TEXT');
+        } catch (e) {}
+
         console.log('Schema initialized');
     } catch (error) {
         console.error('Schema init error:', error);
@@ -370,13 +381,15 @@ export async function addProject(data: {
     challenge_solution?: string | null;
     link?: string | null;
     github?: string | null;
+    custom_link?: string | null;
+    custom_button_label?: string | null;
     featured?: boolean;
     sort_order?: number;
 }) {
     await ensureSchema();
     await db.execute({
-        sql: `INSERT INTO projects (title, slug, description, full_content, tech, image_path, hero_image, gallery_images, trailer_url, project_role, project_date, highlight, challenge_solution, link, github, featured, sort_order)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        sql: `INSERT INTO projects (title, slug, description, full_content, tech, image_path, hero_image, gallery_images, trailer_url, project_role, project_date, highlight, challenge_solution, link, github, custom_link, custom_button_label, featured, sort_order)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [
             data.title,
             data.slug,
@@ -393,6 +406,8 @@ export async function addProject(data: {
             data.challenge_solution || null,
             data.link || null,
             data.github || null,
+            data.custom_link || null,
+            data.custom_button_label || null,
             data.featured ? 1 : 0,
             data.sort_order || 0
         ]
@@ -415,6 +430,8 @@ export async function updateProject(id: number, data: {
     challenge_solution?: string | null;
     link?: string | null;
     github?: string | null;
+    custom_link?: string | null;
+    custom_button_label?: string | null;
     featured?: boolean;
     sort_order?: number;
 }) {
@@ -424,7 +441,7 @@ export async function updateProject(id: number, data: {
               title = ?, slug = ?, description = ?, full_content = ?, tech = ?,
               image_path = ?, hero_image = ?, gallery_images = ?, trailer_url = ?,
               project_role = ?, project_date = ?, highlight = ?, challenge_solution = ?,
-              link = ?, github = ?, featured = ?, sort_order = ?, updated_at = CURRENT_TIMESTAMP
+              link = ?, github = ?, custom_link = ?, custom_button_label = ?, featured = ?, sort_order = ?, updated_at = CURRENT_TIMESTAMP
               WHERE id = ?`,
         args: [
             data.title,
@@ -442,6 +459,8 @@ export async function updateProject(id: number, data: {
             data.challenge_solution || null,
             data.link || null,
             data.github || null,
+            data.custom_link || null,
+            data.custom_button_label || null,
             data.featured ? 1 : 0,
             data.sort_order || 0,
             id

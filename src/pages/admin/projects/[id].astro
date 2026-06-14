@@ -98,6 +98,8 @@ if (Astro.request.method === 'POST') {
             challenge_solution: formData.get('challenge_solution') as string || null,
             link: formData.get('link') as string,
             github: formData.get('github') as string,
+            custom_link: formData.get('custom_link') as string || null,
+            custom_button_label: formData.get('custom_button_label') as string || null,
             featured: formData.get('featured') === 'on',
             sort_order: parseInt(formData.get('sort_order') as string) || 0,
         };
@@ -292,6 +294,17 @@ const galleryImages = project.gallery_images || [];
                     <div>
                         <label for="github" class="form-label">GitHub URL</label>
                         <input type="url" id="github" name="github" class="form-input" value={project.github || ''} />
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="custom_link" class="form-label">Custom Link (e.g., Manual Book / Doc URL)</label>
+                        <input type="url" id="custom_link" name="custom_link" class="form-input" value={project.custom_link || ''} placeholder="https://example.com/manual" />
+                    </div>
+                    <div>
+                        <label for="custom_button_label" class="form-label">Custom Button Label</label>
+                        <input type="text" id="custom_button_label" name="custom_button_label" class="form-input" value={project.custom_button_label || ''} placeholder="e.g., Manual Book" />
                     </div>
                 </div>
                 

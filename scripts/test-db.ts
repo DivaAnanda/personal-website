@@ -126,19 +126,21 @@ async function runTests() {
             tech: ['Astro', 'TS'],
             link: 'https://example.com',
             github: 'https://github.com',
+            custom_link: 'https://example.com/manual',
+            custom_button_label: 'Manual Book',
             featured: true,
             sort_order: 1
         });
         let projects = await db.getAllProjects();
-        if (projects.length !== 1 || projects[0].title !== 'Test Project') {
+        if (projects.length !== 1 || projects[0].title !== 'Test Project' || projects[0].custom_link !== 'https://example.com/manual' || projects[0].custom_button_label !== 'Manual Book') {
             throw new Error('Failed to get projects: ' + JSON.stringify(projects));
         }
         const projBySlug = await db.getProjectBySlug('test-project');
-        if (!projBySlug || projBySlug.title !== 'Test Project') {
+        if (!projBySlug || projBySlug.title !== 'Test Project' || projBySlug.custom_link !== 'https://example.com/manual') {
             throw new Error('Failed to get project by slug: ' + JSON.stringify(projBySlug));
         }
         const projById = await db.getProjectById(projects[0].id);
-        if (!projById || projById.title !== 'Test Project') {
+        if (!projById || projById.title !== 'Test Project' || projById.custom_link !== 'https://example.com/manual') {
             throw new Error('Failed to get project by ID: ' + JSON.stringify(projById));
         }
         await db.updateProject(projects[0].id, {
@@ -149,11 +151,13 @@ async function runTests() {
             tech: ['Astro', 'TS', 'React'],
             link: 'https://example.com',
             github: 'https://github.com',
+            custom_link: 'https://example.com/new-manual',
+            custom_button_label: 'New Manual',
             featured: false,
             sort_order: 2
         });
         projects = await db.getAllProjects();
-        if (projects[0].title !== 'Updated Project' || projects[0].featured !== 0) {
+        if (projects[0].title !== 'Updated Project' || projects[0].featured !== 0 || projects[0].custom_link !== 'https://example.com/new-manual' || projects[0].custom_button_label !== 'New Manual') {
             throw new Error('Failed to update project: ' + JSON.stringify(projects));
         }
         await db.deleteProject(projects[0].id);

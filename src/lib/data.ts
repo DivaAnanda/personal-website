@@ -105,6 +105,8 @@ export async function seedDatabaseFromJson() {
                 challenge_solution: null,
                 link: proj.link !== '#' ? proj.link : null,
                 github: proj.github !== '#' ? proj.github : null,
+                custom_link: proj.custom_link || null,
+                custom_button_label: proj.custom_button_label || null,
                 featured: i === 0,
                 sort_order: i
             });
@@ -187,6 +189,8 @@ export async function getSiteData() {
             challenge_solution: p.challenge_solution,
             link: p.link,
             github: p.github,
+            custom_link: p.custom_link,
+            custom_button_label: p.custom_button_label,
             featured: p.featured
         })) : content.projects,
         education: content.education,
