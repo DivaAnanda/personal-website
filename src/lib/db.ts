@@ -40,6 +40,7 @@ async function initSchema() {
                 phone TEXT,
                 github TEXT,
                 linkedin TEXT,
+                cv_url TEXT,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
 
@@ -123,6 +124,9 @@ async function initSchema() {
         try {
             await db.execute('ALTER TABLE projects ADD COLUMN custom_button_label TEXT');
         } catch (e) {}
+        try {
+            await db.execute('ALTER TABLE personal_info ADD COLUMN cv_url TEXT');
+        } catch (e) {}
 
         console.log('Schema initialized');
     } catch (error) {
@@ -162,11 +166,12 @@ export async function updatePersonalInfo(data: {
     phone?: string;
     github?: string;
     linkedin?: string;
+    cv_url?: string;
 }) {
     await ensureSchema();
     await db.execute({
-        sql: `INSERT INTO personal_info (id, name, nickname, role, tagline, about, location, email, phone, github, linkedin, updated_at)
-              VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        sql: `INSERT INTO personal_info (id, name, nickname, role, tagline, about, location, email, phone, github, linkedin, cv_url, updated_at)
+              VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
               ON CONFLICT(id) DO UPDATE SET
                   name = excluded.name,
                   nickname = excluded.nickname,
@@ -178,6 +183,7 @@ export async function updatePersonalInfo(data: {
                   phone = excluded.phone,
                   github = excluded.github,
                   linkedin = excluded.linkedin,
+                  cv_url = excluded.cv_url,
                   updated_at = CURRENT_TIMESTAMP`,
         args: [
             data.name,
@@ -189,7 +195,8 @@ export async function updatePersonalInfo(data: {
             data.email || null,
             data.phone || null,
             data.github || null,
-            data.linkedin || null
+            data.linkedin || null,
+            data.cv_url || null
         ]
     });
 }

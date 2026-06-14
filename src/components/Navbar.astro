@@ -28,7 +28,7 @@ const lastName = (nameParts.length > 1 ? nameParts[nameParts.length - 1] : "Anan
         </a>
       ))}
       <a 
-        href="/cv.pdf" 
+        href={data.personal.cv_url || '/cv.pdf'} 
         download
         class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold tracking-wider rounded flex items-center gap-2 transition-all"
       >
@@ -69,7 +69,7 @@ const lastName = (nameParts.length > 1 ? nameParts[nameParts.length - 1] : "Anan
     ))}
     <div class="h-[1px] bg-slate-800 my-2"></div>
     <a 
-      href="/cv.pdf" 
+      href={data.personal.cv_url || '/cv.pdf'} 
       download
       class="w-full py-4 bg-blue-600 text-white font-bold rounded flex justify-center items-center gap-2"
     >

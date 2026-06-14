@@ -27,6 +27,7 @@ if (Astro.request.method === 'POST') {
             phone: formData.get('phone') as string,
             github: formData.get('github') as string,
             linkedin: formData.get('linkedin') as string,
+            cv_url: formData.get('cv_url') as string,
         };
         
         await updatePersonalInfo(data);
@@ -196,6 +197,45 @@ const info = await getPersonalInfo() || {};
                 </div>
             </div>
             
+            <!-- CV Document -->
+            <div class="border-t border-slate-800 pt-6">
+                <h3 class="text-lg font-semibold text-white mb-4">CV Document</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="cv_file" class="form-label">Upload CV (PDF)</label>
+                        <input 
+                            type="file" 
+                            id="cv_file" 
+                            accept=".pdf" 
+                            class="form-input"
+                            onchange="handleCVUpload(this)"
+                        />
+                        <p class="text-xs text-slate-500 mt-1">Upload a PDF file to update the CV link across the website.</p>
+                    </div>
+                    
+                    <div id="cv-status" class="text-sm font-mono mt-2">
+                        {info.cv_url ? (
+                            <div class="flex items-center gap-2">
+                                <span class="text-green-400">✓ Current CV:</span>
+                                <a href={info.cv_url} target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline break-all">
+                                    {info.cv_url}
+                                </a>
+                            </div>
+                        ) : (
+                            <span class="text-slate-500">No custom CV uploaded. Using default /cv.pdf</span>
+                        )}
+                    </div>
+                    
+                    <input 
+                        type="hidden" 
+                        id="cv_url" 
+                        name="cv_url" 
+                        value={info.cv_url || ''} 
+                    />
+                </div>
+            </div>
+            
             <!-- Submit -->
             <div class="flex gap-4 pt-4">
                 <button type="submit" class="btn btn-primary">
@@ -208,3 +248,63 @@ const info = await getPersonalInfo() || {};
         </div>
     </form>
 </AdminLayout>
+
+<script>
+    import { upload } from '@vercel/blob/client';
+
+    const submitBtn = document.querySelector('button[type="submit"]') as HTMLButtonElement;
+    const originalText = submitBtn ? submitBtn.textContent : 'Save Changes';
+    const cvStatus = document.getElementById('cv-status');
+    const hiddenInput = document.getElementById('cv_url') as HTMLInputElement;
+
+    async function handleCVUpload(input: HTMLInputElement) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Uploading CV...';
+            }
+            if (cvStatus) {
+                cvStatus.innerHTML = '<span class="text-blue-400 animate-pulse">Uploading CV to cloud...</span>';
+            }
+            
+            try {
+                // Upload direct to Vercel Blob
+                const blob = await upload(file.name, file, {
+                    access: 'public',
+                    handleUploadUrl: '/api/projects/upload',
+                });
+                
+                const url = blob.url;
+                
+                if (hiddenInput) {
+                    hiddenInput.value = url;
+                }
+                if (cvStatus) {
+                    cvStatus.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <span class="text-green-400">✓ Uploaded successfully:</span>
+                            <a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline break-all">
+                                ${url}
+                            </a>
+                        </div>
+                    `;
+                }
+            } catch (err: any) {
+                console.error('Blob upload error:', err);
+                alert('Cloud upload failed. Please verify that Vercel Blob storage is active.');
+                if (cvStatus) {
+                    cvStatus.innerHTML = '<span class="text-red-400">Upload failed. Click to try again.</span>';
+                }
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            }
+        }
+    }
+    
+    (window as any).handleCVUpload = handleCVUpload;
+</script>

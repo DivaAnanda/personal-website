@@ -149,7 +149,8 @@ export async function getSiteData() {
             about: personal?.about || content.personal.about,
             location: personal?.location || content.personal.location,
             email: personal?.email || content.personal.email,
-            phone: personal?.phone || content.personal.phone
+            phone: personal?.phone || content.personal.phone,
+            cv_url: personal?.cv_url || '/cv.pdf'
         },
         socials: {
             github: personal?.github || content.socials.github,
