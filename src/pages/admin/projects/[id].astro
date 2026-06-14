@@ -47,20 +47,20 @@ if (Astro.request.method === 'POST') {
         const formData = await Astro.request.formData();
         
         // Handle image uploads (keep existing if no new upload)
-        const thumbnailPath = (formData.get('thumbnail_base64') as string) || project.image_path;
-        const heroPath = (formData.get('hero_image_base64') as string) || project.hero_image;
+        const thumbnailPath = (formData.get('thumbnail_url') as string) || project.image_path;
+        const heroPath = (formData.get('hero_image_url') as string) || project.hero_image;
         
         // Handle gallery images - merge existing with new uploads
         let galleryImages: string[] = project.gallery_images || [];
         
         for (let i = 1; i <= 6; i++) {
-            const galleryBase64 = formData.get(`gallery_${i}_base64`) as string;
-            if (galleryBase64) {
+            const galleryUrl = formData.get(`gallery_${i}_url`) as string;
+            if (galleryUrl) {
                 // Replace at position if exists, otherwise add
                 if (galleryImages[i - 1]) {
-                    galleryImages[i - 1] = galleryBase64;
+                    galleryImages[i - 1] = galleryUrl;
                 } else {
-                    galleryImages.push(galleryBase64);
+                    galleryImages.push(galleryUrl);
                 }
             }
         }
@@ -189,8 +189,8 @@ const galleryImages = project.gallery_images || [];
                             </div>
                         )}
                         <div class="file-upload" onclick="document.getElementById('thumbnail').click()">
-                            <input type="file" id="thumbnail" accept="image/*" class="hidden" onchange="handleFileSelect(this, 'thumbnail-preview', 'thumbnail-base64')" />
-                            <input type="hidden" name="thumbnail_base64" id="thumbnail-base64" />
+                            <input type="file" id="thumbnail" accept="image/*" class="hidden" onchange="handleFileSelect(this, 'thumbnail-preview', 'thumbnail-url')" />
+                            <input type="hidden" name="thumbnail_url" id="thumbnail-url" />
                             <div id="thumbnail-preview-placeholder">
                                 <p class="text-slate-400 text-sm">{project.image_path ? 'Click to replace' : 'Click to upload'}</p>
                             </div>
@@ -208,8 +208,8 @@ const galleryImages = project.gallery_images || [];
                             </div>
                         )}
                         <div class="file-upload" onclick="document.getElementById('hero_image').click()">
-                            <input type="file" id="hero_image" accept="image/*" class="hidden" onchange="handleFileSelect(this, 'hero-preview', 'hero-base64')" />
-                            <input type="hidden" name="hero_image_base64" id="hero-base64" />
+                            <input type="file" id="hero_image" accept="image/*" class="hidden" onchange="handleFileSelect(this, 'hero-preview', 'hero-url')" />
+                            <input type="hidden" name="hero_image_url" id="hero-url" />
                             <div id="hero-preview-placeholder">
                                 <p class="text-slate-400 text-sm">{project.hero_image ? 'Click to replace' : 'Click to upload'}</p>
                             </div>
@@ -245,8 +245,8 @@ const galleryImages = project.gallery_images || [];
                     <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
                         {[1, 2, 3, 4, 5, 6].map((i) => (
                             <div class="file-upload aspect-square p-2" onclick={`document.getElementById('gallery_${i}').click()`}>
-                                <input type="file" id={`gallery_${i}`} accept="image/*" class="hidden" onchange={`handleFileSelect(this, 'gallery-preview-${i}', 'gallery-${i}-base64')`} />
-                                <input type="hidden" name={`gallery_${i}_base64`} id={`gallery-${i}-base64`} />
+                                <input type="file" id={`gallery_${i}`} accept="image/*" class="hidden" onchange={`handleFileSelect(this, 'gallery-preview-${i}', 'gallery-${i}-url')`} />
+                                <input type="hidden" name={`gallery_${i}_url`} id={`gallery-${i}-url`} />
                                 <div id={`gallery-placeholder-${i}`} class="flex flex-col items-center justify-center h-full">
                                     <span class="text-slate-500 text-xl">+</span>
                                 </div>
@@ -334,42 +334,28 @@ const galleryImages = project.gallery_images || [];
 </AdminLayout>
 
 <script>
-    function compressImage(file: File, maxWidth: number, maxHeight: number, quality: number): Promise<string> {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (event: any) => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-                    
-                    if (width > height) {
-                        if (width > maxWidth) {
-                            height = Math.round((height * maxWidth) / width);
-                            width = maxWidth;
-                        }
-                    } else {
-                        if (height > maxHeight) {
-                            width = Math.round((width * maxHeight) / height);
-                            height = maxHeight;
-                        }
-                    }
-                    
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx?.drawImage(img, 0, 0, width, height);
-                    
-                    const dataUrl = canvas.toDataURL('image/jpeg', quality);
-                    resolve(dataUrl);
-                };
-                img.onerror = (err) => reject(err);
-            };
-            reader.onerror = (err) => reject(err);
-        });
+    import { upload } from '@vercel/blob/client';
+
+    let activeUploads = 0;
+    const submitBtn = document.querySelector('button[type="submit"]') as HTMLButtonElement;
+    const originalText = submitBtn ? submitBtn.textContent : 'Save Changes';
+
+    function setUploadingState(isUploading: boolean) {
+        if (isUploading) {
+            activeUploads++;
+        } else {
+            activeUploads--;
+        }
+
+        if (submitBtn) {
+            if (activeUploads > 0) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Uploading images...';
+            } else {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
     }
 
     async function handleFileSelect(input: HTMLInputElement, previewId: string, hiddenInputId: string) {
@@ -379,31 +365,44 @@ const galleryImages = project.gallery_images || [];
         
         if (input.files && input.files[0]) {
             const file = input.files[0];
+            
+            // Show uploading state on the UI
+            if (placeholder) {
+                placeholder.innerHTML = `<p class="text-blue-400 text-sm animate-pulse">Uploading to cloud...</p>`;
+            }
+            
+            setUploadingState(true);
+            
             try {
-                // Compress image
-                const base64 = await compressImage(file, 1200, 1200, 0.7);
+                // Upload direct to Vercel Blob
+                const blob = await upload(file.name, file, {
+                    access: 'public',
+                    handleUploadUrl: '/api/projects/upload',
+                });
+                
+                const url = blob.url;
+                
                 if (preview) {
-                    preview.src = base64;
+                    preview.src = url;
                     preview.classList.remove('hidden');
                 }
                 if (placeholder) {
                     placeholder.classList.add('hidden');
                 }
                 if (hiddenInput) {
-                    hiddenInput.value = base64;
+                    hiddenInput.value = url;
                 }
-            } catch (err) {
-                console.error('Compression error, falling back to raw:', err);
-                const reader = new FileReader();
-                reader.onload = (e: any) => {
-                    if (preview) {
-                        preview.src = e.target.result;
-                        preview.classList.remove('hidden');
-                    }
-                    if (placeholder) placeholder.classList.add('hidden');
-                    if (hiddenInput) hiddenInput.value = e.target.result;
-                };
-                reader.readAsDataURL(file);
+            } catch (err: any) {
+                console.error('Blob upload error:', err);
+                alert('Cloud upload failed. Please verify that Vercel Blob storage is created in your Vercel Dashboard.');
+                if (placeholder) {
+                    placeholder.innerHTML = `
+                        <p class="text-red-400 text-sm">Upload failed</p>
+                        <p class="text-xs text-slate-500">Click to retry</p>
+                    `;
+                }
+            } finally {
+                setUploadingState(false);
             }
         }
     }
